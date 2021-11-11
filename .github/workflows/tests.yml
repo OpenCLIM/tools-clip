@@ -1,0 +1,22 @@
+name: tests
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Test vector re-project
+        run: docker build . -t transformer && docker run --env process=re-project --env output_crs=4326 --env input_dir=test_data -t transformer
+
+      - name: Test vector clip - file
+        run: docker build . -t transformer && docker run --env process=clip --env input_dir=test_data --env input_file=sssi.gpkg --env clip_file=ni_boundary_bfc_2020.gpkg --env output_file=sssi_ni.gpkg -t transformer
+
+      - name: Test vector clip - extents
+        run: docker build . -t transformer && docker run --env process=clip --env input_dir=test_data --env input_file=sssi.gpkg --env extent=150887,596651,214481,677359 --env output_file=sssi_ni.gpkg -t transformer
+
+      - name: Test raster clip
+        run: docker build . -t transformer && docker run --env process=clip --env data_type=raster --env input_dir=test_data --env input_file=out_cell_dev.asc --env extent=240318,657849,248669,669012 --env output_file=out_cell_dev_sm.tif -t transformer

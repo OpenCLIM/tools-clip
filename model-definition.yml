@@ -1,0 +1,63 @@
+kind: Model
+apiVersion: v1alpha5
+metadata:
+  displayName: DataToolSet:Clip
+  type: data-processing
+  name: toolset-clip
+  summary: A utility tool for clipping spatial data
+  description: >
+    Allows a spatial dataset to be clipped. Uses GDAL methods.
+spec:
+  inputs:
+    env:
+      - name: data_type
+        title: Data type
+        type: string
+        description: The data format to be transformed
+        default: vector
+        required: true
+        options:
+          - name: vector
+            title: Vector data format
+          - name: raster
+            title: Raster data format
+
+      - name: output_file
+        title: Output file name
+        description: The name to be given to the output file. If not given, 'clip' will be appended to the name of the input dataset
+        type: string
+        required: false
+        default: ''
+
+      - name: output_crs
+        title: The CRS for the re-projected dataset
+        description: Required whe using the re-project transform function. Should be a valid EPSG code e.g. 27700 (BNG), 4326 (GPS CRS)
+        type: string
+        default: '27700'
+        required: false
+
+      - name: extent
+        title: extent
+        type: string
+        description: Should be formatted as `<xmin>,<ymin>,<xmax>,<ymax>`
+        default: ''
+        required: false
+
+    dataslots:
+      - name: Input data files
+        description: Any data files which are to be clipped
+        path: inputs/
+        required: true
+      - name: Clip extent file
+        description: Spatial file to clip the input data with.
+        path: clip_extent/
+        required: false
+
+  outputs:
+    datasets:
+      - name: outputs/data/*
+        type: folder
+        description: path to processed data outputs
+      - name: outputs/log/*
+        type: Text
+        description: log file
