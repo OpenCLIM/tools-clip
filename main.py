@@ -80,24 +80,28 @@ defaults = {
     'output_crs': '27700'
 }
 
+
 # get input file(s)
-print(data_path)
-print(input_dir)
-print(join(data_path, input_dir))
 input_files = [f for f in listdir(join(data_path, input_dir)) if isfile(join(data_path, input_dir, f))]
-print(input_files)
+if len(input_files) == 0:
+    print('Error! No input files found! Terminating')
+    logger.info('Error! No input files found! Terminating!')
+    exit(2)
+
 logger.info('Input files: %s' %input_files)
 
+
+# get data type
 data_type = getenv('data_type') # get the type of data to be clipped. raster or vector
 if data_type is None: # grab the default if the var hasn't been passed
     print('Warning! No data_type var passed, using default - vector')
     data_type = defaults['data_type']
 logger.info('Data type to be clipped set as: %s' %data_type)
 
+
 # get extents for clip - file or defined extents
 # clip area file
 clip_file = fetch_clip_file()
-
 print('clip files is:', clip_file)
 logger.info('Clip file: %s' % clip_file)
 
@@ -113,12 +117,14 @@ if clip_file is None and extent is None:
     logger.info('Error: No clip file found and no extent defined. At least one is required. Terminating!')
     exit(2)
 
-# output file # this should only be used if a single input file is passed
+
+# output file - this is only used if a single input file is passed
 output_file = getenv('output_file')
 logger.info('Output file: %s' % output_file)
 if output_file is None:
     print('Warning! No output file var passed.')
     output_file = 'clip_result'
+
 
 # run clip process
 if data_type == 'vector':
