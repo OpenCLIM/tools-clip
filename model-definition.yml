@@ -1,15 +1,16 @@
 kind: Model
-apiVersion: v1alpha5
+api_version: v1beta1
 metadata:
-  displayName: DataToolSet:Clip
-  type: data-processing
+  display_name: DataToolSet:Clip
   name: toolset-clip
   summary: A utility tool for clipping spatial data
+  publisher: Newcastle University
+  source_code: https://github.com/OpenCLIM/tools-clipi
   description: >
     Allows a spatial dataset to be clipped. Uses GDAL methods.
 spec:
   inputs:
-    env:
+    parameters:
       - name: data_type
         title: Data type
         type: string
@@ -29,13 +30,6 @@ spec:
         required: false
         default: ''
 
-      - name: output_crs
-        title: The CRS for the re-projected dataset
-        description: Required whe using the re-project transform function. Should be a valid EPSG code e.g. 27700 (BNG), 4326 (GPS CRS)
-        type: string
-        default: '27700'
-        required: false
-
       - name: extent
         title: extent
         type: string
@@ -48,9 +42,13 @@ spec:
         description: Any data files which are to be clipped
         path: inputs/
         required: true
+        default:
+          -
       - name: Clip extent file
-        description: Spatial file to clip the input data with.
+        description: Spatial file to clip the input data with. GeoPackage format only.
         path: clip_extent/
+        default:
+          -
         required: false
 
   outputs:

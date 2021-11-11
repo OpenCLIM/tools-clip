@@ -77,8 +77,10 @@ logger.info('Running a clip')
 
 # get extents for clip - file or defined extents
 # clip area file
-for file in glob.glob(join(data_path, clip_extent_dir,"*.shp")):
-    clip_file = file
+extensions = ['gpkg', 'shp']
+for extension in extensions:
+    for file in glob.glob(join(data_path, clip_extent_dir, "*.%s" % extension)):
+        clip_file = file
 
 print('clip files is:', clip_file)
 logger.info('Clip file: %s' % clip_file)
