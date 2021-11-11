@@ -25,7 +25,7 @@ spec:
 
       - name: output_file
         title: Output file name
-        description: The name to be given to the output file. If not given, 'clip' will be appended to the name of the input dataset
+        description: The name to be given to the output file - only used if one input file passed, otherwise overridden and the default behaviour used. By default, and if multiple input files set, '_clip' will be appended to the name of the input dataset for the output file name.
         type: string
         required: false
         default: ''
@@ -43,12 +43,12 @@ spec:
         path: inputs/
         required: true
         default:
-          -
+          - 383dfcba-c0d3-4e3c-aaba-48f456f5d2eb
       - name: Clip extent file
-        description: Spatial file to clip the input data with. GeoPackage format only.
+        description: Spatial file to clip the input data with. GeoPackage or shapefile format only.
         path: clip_extent/
         default:
-          -
+          - 2f00857b-6931-4b0b-9066-7918c668e42b
         required: false
 
   outputs:
