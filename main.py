@@ -19,19 +19,19 @@ def check_output_dir(path):
     return
 
 
-def output_file_name(input_file, output_file_name, number_of_input_files):
+def output_file_name(input_name, output_name, number_of_input_files):
     """
     Set the name for the output file from each clip process
     If more than 1 input file to be clipped, default behaviour should be used
     If only one input file passed, and output file name not set, use default behavior
     If only one input file passed, and the output file name is passed, use output file name
     """
-    input_name, input_extension = input_file.split('.')
+    input_name, input_extension = input_name.split('.')
 
-    if number_of_input_files > 1 or output_file_name is None:
+    if number_of_input_files > 1 or output_name is None:
         output_file = input_name + '_clip.' + input_extension
     else:
-        output_file = output_file_name
+        output_file = output_name
 
     return output_file
 
@@ -49,6 +49,27 @@ def fetch_clip_file():
             clip_file = file
 
     return clip_file
+
+
+def filter_input_files(input_file_list, data_type):
+    """
+
+    """
+
+    if data_type == 'raster':
+        file_extensions = ['asc', 'tiff', 'geotiff']
+    elif data_type == 'vector':
+        file_extensions = ['gpkg', 'shp', 'geojson']
+
+    verified_file_list = []
+
+    for file in input_file_list:
+        file_extension = file.split('.')[-1].lower()
+        print(file_extension)
+        if file_extension in file_extensions:
+            verified_file_list.append(file)
+
+    return verified_file_list
 
 
 # file paths
@@ -80,6 +101,12 @@ defaults = {
     'output_crs': '27700'
 }
 
+# get data type
+data_type = getenv('data_type') # get the type of data to be clipped. raster or vector
+if data_type is None: # grab the default if the var hasn't been passed
+    print('Warning! No data_type var passed, using default - vector')
+    data_type = defaults['data_type']
+logger.info('Data type to be clipped set as: %s' %data_type)
 
 # get input file(s)
 input_files = [f for f in listdir(join(data_path, input_dir)) if isfile(join(data_path, input_dir, f))]
@@ -88,15 +115,13 @@ if len(input_files) == 0:
     logger.info('Error! No input files found! Terminating!')
     exit(2)
 
-logger.info('Input files: %s' %input_files)
+input_files = filter_input_files(input_files, data_type)
+if len(input_files) == 0:
+    print('Error! No input files given specified data format! Terminating!')
+    logger.info('Error! No input files given specified data format! Terminating!')
+    exit(2)
 
-
-# get data type
-data_type = getenv('data_type') # get the type of data to be clipped. raster or vector
-if data_type is None: # grab the default if the var hasn't been passed
-    print('Warning! No data_type var passed, using default - vector')
-    data_type = defaults['data_type']
-logger.info('Data type to be clipped set as: %s' %data_type)
+logger.info('Verified input files: %s' %input_files)
 
 
 # get extents for clip - file or defined extents
@@ -107,8 +132,12 @@ logger.info('Clip file: %s' % clip_file)
 
 # defined extents
 extent = getenv('extent')
-if extent is not None:
+if extent == '' or extent == 'None': # if no extent passed
+    extent = None
+else:
     extent = extent.split(',')
+
+print('Extent: %s' % extent)
 logger.info('Extent: %s' % extent)
 
 if clip_file is None and extent is None:
@@ -120,11 +149,21 @@ if clip_file is None and extent is None:
 
 # output file - this is only used if a single input file is passed
 output_file = getenv('output_file')
+print('Output file: %s' % output_file)
 logger.info('Output file: %s' % output_file)
-if output_file is None:
-    print('Warning! No output file var passed.')
-    output_file = 'clip_result'
+if len(input_files) > 1:
+    logger.info('Setting output file var as None as more than one input file passed')
+    output_file = None
+elif output_file is None or output_file == 'None':
+    logger.info('No output file var passed')
+    output_file = None
+elif output_file[0] == '' or output_file == '[]': # needed on DAFNI
+    print('Warning! Empty output file var passed.')
+    logger.info('Empty output file var passed')
+    output_file = None
 
+# END OF PARAMETER FETCHING
+# START RUNNING THE PROCESSING
 
 # run clip process
 if data_type == 'vector':
@@ -160,7 +199,7 @@ elif data_type == 'raster':
         logger.info('Using raster methods')
         if extent is not None:
             logger.info("Using extent method")
-
+            print('Using extent method')
             logger.info("Running....")
             subprocess.run(["gdalwarp", "-te", *extent, join(data_path, input_dir, input_file),
                             join(data_path, output_dir, 'data', output_file)])
@@ -181,6 +220,7 @@ elif data_type == 'raster':
 files = [f for f in listdir(join(data_path, output_dir, 'data')) if
          isfile(join(data_path, output_dir, 'data', f))]
 logger.info('Files in output dir: %s' % files)
+print('Files in output dir: %s' % files)
 
 print('Completed running clip')
 logger.info('Completed running clip. Stopping tool.')

@@ -28,18 +28,18 @@ spec:
         description: The name to be given to the output file - only used if one input file passed, otherwise overridden and the default behaviour used. By default, and if multiple input files set, '_clip' will be appended to the name of the input dataset for the output file name.
         type: string
         required: false
-        default: ''
+        default: 'None'
 
       - name: extent
         title: extent
         type: string
         description: Should be formatted as `<xmin>,<ymin>,<xmax>,<ymax>`
-        default: ''
+        default: 'None'
         required: false
 
     dataslots:
       - name: Input data files
-        description: Any data files which are to be clipped
+        description: Any data files which are to be clipped. Should match common data formats (rasters - .asc, .tiff, .geotiff; vector - .gpkg, .shp)
         path: inputs/
         required: true
         default:
