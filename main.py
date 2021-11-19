@@ -174,20 +174,20 @@ if data_type == 'vector':
     print(join(data_path, output_dir, output_file))
     for input_file in input_files:
 
-        output_file = output_file_name(input_file, output_file, len(input_files))
+        output_file_name_set = output_file_name(input_file, output_file, len(input_files))
 
         if clip_file is not None:
             logger.info('Using clip file method')
             logger.info("Running....")
             subprocess.run(["ogr2ogr", "-clipsrc", join(data_path, input_dir, clip_file), "-f", "GPKG",
-                            join(data_path, output_dir, 'data', output_file), join(data_path, input_dir, input_file)])
+                            join(data_path, output_dir, 'data', output_file_name_set), join(data_path, input_dir, input_file)])
             logger.info("....completed processing")
 
         elif extent is not None:
             print('Running extent method')
             logger.info('Using extent method')
             logger.info("Running....")
-            subprocess.run(["ogr2ogr", "-spat", *extent, "-f", "GPKG", join(data_path, output_dir, 'data', output_file),
+            subprocess.run(["ogr2ogr", "-spat", *extent, "-f", "GPKG", join(data_path, output_dir, 'data', output_file_name_set),
                             join(data_path, input_dir, input_file)])
             logger.info("....completed processing")
 
@@ -196,7 +196,7 @@ elif data_type == 'raster':
     for input_file in input_files:
         print('Running for input:', input_file)
 
-        output_file = output_file_name(input_file, output_file, len(input_files))
+        output_file_name_set = output_file_name(input_file, output_file, len(input_files))
 
         logger.info('Using raster methods')
         if extent is not None:
@@ -204,7 +204,7 @@ elif data_type == 'raster':
             print('Using extent method')
             logger.info("Running....")
             subprocess.run(["gdalwarp", "-te", *extent, join(data_path, input_dir, input_file),
-                            join(data_path, output_dir, 'data', output_file)])
+                            join(data_path, output_dir, 'data', output_file_name_set)])
             logger.info("....completed processing")
 
         elif clip_file is not None:
@@ -212,14 +212,14 @@ elif data_type == 'raster':
             logger.info("Using clip file method")
 
             subprocess.run(["gdalwarp", "-cutline", clip_file, join(data_path, input_dir, input_file),
-                            join(data_path, output_dir, 'data', output_file)])
+                            join(data_path, output_dir, 'data', output_file_name_set)])
 
             # add check to see if file written to directory as expected
-            if isfile(join(data_path, output_dir, 'data', output_file)):
-                logger.info("Raster clip method completed. Output saved (%s)" %join(data_path, output_dir, 'data', output_file))
-                print(join(data_path, output_dir, 'data', output_file))
+            if isfile(join(data_path, output_dir, 'data', output_file_name_set)):
+                logger.info("Raster clip method completed. Output saved (%s)" %join(data_path, output_dir, 'data', output_file_name_set))
+                print(join(data_path, output_dir, 'data', output_file_name_set))
             else:
-                logger.info("Failed. Expected output not found (%s)" % join(data_path, output_dir, 'data', output_file))
+                logger.info("Failed. Expected output not found (%s)" % join(data_path, output_dir, 'data', output_file_name_set))
 
 
 
