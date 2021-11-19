@@ -88,7 +88,7 @@ check_output_dir(join(data_path, output_dir, 'data'))
 
 logger = logging.getLogger('transformer')
 logger.setLevel(logging.INFO)
-fh = logging.FileHandler( Path(join(data_path, output_dir, 'log')) / 'transformer.log')
+fh = logging.FileHandler( Path(join(data_path, output_dir, 'log')) / 'tool-clip.log')
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 fh.setFormatter(formatter)
 logger.addHandler(fh)
@@ -114,6 +114,8 @@ if len(input_files) == 0:
     print('Error! No input files found! Terminating')
     logger.info('Error! No input files found! Terminating!')
     exit(2)
+
+logger.info('Input files found: %s' %input_files)
 
 input_files = filter_input_files(input_files, data_type)
 if len(input_files) == 0:
