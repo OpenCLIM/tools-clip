@@ -9,5 +9,5 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Test raster clip
-        run: docker build . -t clip && docker run --env data_type=raster -t clip
+      #- name: Test raster clip
+      #  run: docker build . -t clip && docker run --env data_type=raster -t clip
