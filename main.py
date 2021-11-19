@@ -207,14 +207,19 @@ elif data_type == 'raster':
 
         elif clip_file is not None:
             print("Using clip file method")
-
             logger.info("Using clip file method")
 
             subprocess.run(["gdalwarp", "-cutline", clip_file, join(data_path, input_dir, input_file),
                             join(data_path, output_dir, 'data', output_file)])
 
-            logger.info("Raster clip method completed. Output saved (%s)" %join(data_path, output_dir, 'data', output_file))
-            print(join(data_path, output_dir, 'data', output_file))
+            # add check to see if file written to directory as expected
+            if isfile(join(data_path, output_dir, 'data', output_file)):
+                logger.info("Raster clip method completed. Output saved (%s)" %join(data_path, output_dir, 'data', output_file))
+                print(join(data_path, output_dir, 'data', output_file))
+            else:
+                logger.info("Failed. Expected output not found (%s)" % join(data_path, output_dir, 'data', output_file))
+
+
 
 # check output file is written...... and if not return an error?
 files = [f for f in listdir(join(data_path, output_dir, 'data')) if
