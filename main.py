@@ -4,6 +4,10 @@ from os.path import isfile, join, isdir
 from pathlib import Path
 import logging
 import glob
+import uuid
+
+import string
+import random
 
 
 def check_output_dir(path):
@@ -88,7 +92,8 @@ check_output_dir(join(data_path, output_dir, 'data'))
 
 logger = logging.getLogger('transformer')
 logger.setLevel(logging.INFO)
-fh = logging.FileHandler( Path(join(data_path, output_dir, 'log')) / 'tool-clip.log')
+name = 'tool-clip-%s.log' %(''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6)))
+fh = logging.FileHandler( Path(join(data_path, output_dir, 'log')) / name)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 fh.setFormatter(formatter)
 logger.addHandler(fh)
@@ -231,5 +236,4 @@ print('Files in output dir: %s' % files)
 
 print('Completed running clip')
 logger.info('Completed running clip. Stopping tool.')
-
 
