@@ -43,12 +43,12 @@ spec:
         path: inputs/
         required: true
         default:
-          - 383dfcba-c0d3-4e3c-aaba-48f456f5d2eb
+          - 129f9361-b2ed-460f-a44b-9eeaf00b769c
       - name: Clip extent file
         description: Spatial file to clip the input data with. GeoPackage or shapefile format only.
         path: clip_extent/
         default:
-          - 2f00857b-6931-4b0b-9066-7918c668e42b
+          - 8af3b905-27c9-46db-9684-06bf3eaf0f7c
         required: false
 
   outputs:
