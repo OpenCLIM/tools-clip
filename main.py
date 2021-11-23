@@ -1,5 +1,5 @@
 import subprocess
-from os import listdir, getenv, mkdir, remove
+from os import listdir, getenv, mkdir, remove, rmdir
 from os.path import isfile, join, isdir
 from pathlib import Path
 import logging
@@ -88,7 +88,7 @@ check_output_dir(join(data_path, output_dir))
 # chek dir for log file exists
 check_output_dir(join(data_path, output_dir, 'log'))
 # check output data dir exists
-check_output_dir(join(data_path, output_dir, 'data'))
+check_output_dir(join(data_path, output_dir))
 
 logger = logging.getLogger('transformer')
 logger.setLevel(logging.INFO)
@@ -169,6 +169,21 @@ elif output_file[0] == '' or output_file == '[]': # needed on DAFNI
     logger.info('Empty output file var passed')
     output_file = None
 
+# get save_logfile status
+save_logfile = getenv('save_logfile') # get the type of data to be clipped. raster or vector
+if save_logfile is None: # grab the default if the var hasn't been passed
+    print('Warning! No data_type var passed, using default - vector')
+    save_logfile = False
+elif save_logfile.lower() == 'true':
+    save_logfile = True
+elif save_logfile.lower() == 'false':
+    save_logfile = False
+else:
+    print('Error! Incorrect setting for save logfile parameter (%s)' %save_logfile)
+    logger.info('Error! Incorrect setting for save logfile parameter (%s)' % save_logfile)
+
+logger.info('Data type to be clipped set as: %s' %data_type)
+
 # END OF PARAMETER FETCHING
 # START RUNNING THE PROCESSING
 
@@ -185,14 +200,14 @@ if data_type == 'vector':
             logger.info('Using clip file method')
             logger.info("Running....")
             subprocess.run(["ogr2ogr", "-clipsrc", join(data_path, input_dir, clip_file), "-f", "GPKG",
-                            join(data_path, output_dir, 'data', output_file_name_set), join(data_path, input_dir, input_file)])
+                            join(data_path, output_dir, output_file_name_set), join(data_path, input_dir, input_file)])
             logger.info("....completed processing")
 
         elif extent is not None:
             print('Running extent method')
             logger.info('Using extent method')
             logger.info("Running....")
-            subprocess.run(["ogr2ogr", "-spat", *extent, "-f", "GPKG", join(data_path, output_dir, 'data', output_file_name_set),
+            subprocess.run(["ogr2ogr", "-spat", *extent, "-f", "GPKG", join(data_path, output_dir,output_file_name_set),
                             join(data_path, input_dir, input_file)])
             logger.info("....completed processing")
 
@@ -209,7 +224,7 @@ elif data_type == 'raster':
             print('Using extent method')
             logger.info("Running....")
             subprocess.run(["gdalwarp", "-te", *extent, join(data_path, input_dir, input_file),
-                            join(data_path, output_dir, 'data', output_file_name_set)])
+                            join(data_path, output_dir, output_file_name_set)])
             logger.info("....completed processing")
 
         elif clip_file is not None:
@@ -217,23 +232,26 @@ elif data_type == 'raster':
             logger.info("Using clip file method")
 
             subprocess.run(["gdalwarp", "-cutline", clip_file, join(data_path, input_dir, input_file),
-                            join(data_path, output_dir, 'data', output_file_name_set)])
+                            join(data_path, output_dir, output_file_name_set)])
 
             # add check to see if file written to directory as expected
-            if isfile(join(data_path, output_dir, 'data', output_file_name_set)):
-                logger.info("Raster clip method completed. Output saved (%s)" %join(data_path, output_dir, 'data', output_file_name_set))
-                print(join(data_path, output_dir, 'data', output_file_name_set))
+            if isfile(join(data_path, output_dir, output_file_name_set)):
+                logger.info("Raster clip method completed. Output saved (%s)" %join(data_path, output_dir,output_file_name_set))
+                print(join(data_path, output_dir, output_file_name_set))
             else:
-                logger.info("Failed. Expected output not found (%s)" % join(data_path, output_dir, 'data', output_file_name_set))
+                logger.info("Failed. Expected output not found (%s)" % join(data_path, output_dir, output_file_name_set))
 
 
 
 # check output file is written...... and if not return an error?
-files = [f for f in listdir(join(data_path, output_dir, 'data')) if
-         isfile(join(data_path, output_dir, 'data', f))]
+files = [f for f in listdir(join(data_path, output_dir)) if
+         isfile(join(data_path, output_dir, f))]
 logger.info('Files in output dir: %s' % files)
 print('Files in output dir: %s' % files)
 
 print('Completed running clip')
 logger.info('Completed running clip. Stopping tool.')
 
+if save_logfile:
+    # delete log file dir
+    rmdir(join(data_path, output_dir, 'log'))
