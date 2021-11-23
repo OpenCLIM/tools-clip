@@ -252,6 +252,6 @@ print('Files in output dir: %s' % files)
 print('Completed running clip')
 logger.info('Completed running clip. Stopping tool.')
 
-if save_logfile:
+if save_logfile is False:
     # delete log file dir
     rmdir(join(data_path, output_dir, 'log'))
