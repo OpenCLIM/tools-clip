@@ -1,10 +1,10 @@
 import subprocess
-from os import listdir, getenv, mkdir, remove, rmdir
+from os import listdir, getenv, mkdir, remove
 from os.path import isfile, join, isdir
 from pathlib import Path
 import logging
 import glob
-import uuid
+from shutil import rmtree
 
 import string
 import random
@@ -90,7 +90,7 @@ check_output_dir(join(data_path, output_dir, 'log'))
 # check output data dir exists
 check_output_dir(join(data_path, output_dir))
 
-logger = logging.getLogger('transformer')
+logger = logging.getLogger('tool-clip')
 logger.setLevel(logging.INFO)
 name = 'tool-clip-%s.log' %(''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6)))
 fh = logging.FileHandler( Path(join(data_path, output_dir, 'log')) / name)
@@ -254,4 +254,4 @@ logger.info('Completed running clip. Stopping tool.')
 
 if save_logfile is False:
     # delete log file dir
-    rmdir(join(data_path, output_dir, 'log'))
+    rmtree(join(data_path, output_dir, 'log'))
