@@ -14,3 +14,6 @@ jobs:
 
       - name: Test
         run: docker run -v $PWD/data:/data --env data_type=raster --env output_file=None --env extent=None -t clip
+
+      - name: Test - save log file
+        run: docker run -v $PWD/data:/data --env data_type=raster --env output_file=None --env extent=None --env save_logfile=True -t clip
