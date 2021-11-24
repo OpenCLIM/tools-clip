@@ -11,3 +11,6 @@ jobs:
 
       - name: Build
         run: docker build . -t clip
+
+      - name: Test
+        run: docker run -v $PWD/data:/data --env data_type=raster --env output_file=None --env extent=None -t clip
