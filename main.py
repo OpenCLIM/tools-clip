@@ -49,7 +49,7 @@ def fetch_clip_file():
     clip_file = None  # set in case no file is passed
     extensions = ['gpkg', 'shp']
     for extension in extensions:
-        for file in glob.glob(join(data_path, clip_extent_dir, "*.%s" % extension)):
+        for file in glob.glob(join(data_path, input_dir, clip_extent_dir, "*.%s" % extension)):
             clip_file = file
 
     return clip_file
@@ -80,20 +80,24 @@ def filter_input_files(input_file_list, data_type):
 data_path = '/data'
 input_dir = 'inputs'
 clip_extent_dir = 'clip_extent'
-
+data_to_clip_dir = 'clip'
 output_dir = 'outputs'
+
+# check input directories exist and create if not
+#check_output_dir(join(data_path, input_dir))
+#check_output_dir(join(data_path, input_dir, clip_extent_dir))
+#check_output_dir(join(data_path, input_dir, data_to_clip_dir))
 
 # check output dir exists and create if not
 check_output_dir(join(data_path, output_dir))
+
 # chek dir for log file exists
-check_output_dir(join(data_path, output_dir, 'log'))
-# check output data dir exists
-check_output_dir(join(data_path, output_dir))
+#check_output_dir(join(data_path, output_dir, 'log'))
 
 logger = logging.getLogger('tool-clip')
 logger.setLevel(logging.INFO)
 name = 'tool-clip-%s.log' %(''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6)))
-fh = logging.FileHandler( Path(join(data_path, output_dir, 'log')) / name)
+fh = logging.FileHandler( Path(join(data_path, output_dir)) / name)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 fh.setFormatter(formatter)
 logger.addHandler(fh)
@@ -114,7 +118,7 @@ if data_type is None: # grab the default if the var hasn't been passed
 logger.info('Data type to be clipped set as: %s' %data_type)
 
 # get input file(s)
-input_files = [f for f in listdir(join(data_path, input_dir)) if isfile(join(data_path, input_dir, f))]
+input_files = [f for f in listdir(join(data_path, input_dir, data_to_clip_dir)) if isfile(join(data_path, input_dir, data_to_clip_dir, f))]
 if len(input_files) == 0:
     print('Error! No input files found! Terminating')
     logger.info('Error! No input files found! Terminating!')
@@ -223,7 +227,7 @@ elif data_type == 'raster':
             logger.info("Using extent method")
             print('Using extent method')
             logger.info("Running....")
-            subprocess.run(["gdalwarp", "-te", *extent, join(data_path, input_dir, input_file),
+            subprocess.run(["gdalwarp", "-te", *extent, join(data_path, input_dir, data_to_clip_dir, input_file),
                             join(data_path, output_dir, output_file_name_set)])
             logger.info("....completed processing")
 
@@ -231,7 +235,7 @@ elif data_type == 'raster':
             print("Using clip file method")
             logger.info("Using clip file method")
 
-            subprocess.run(["gdalwarp", "-cutline", clip_file, join(data_path, input_dir, input_file),
+            subprocess.run(["gdalwarp", "-cutline", clip_file, join(data_path, input_dir, data_to_clip_dir, input_file),
                             join(data_path, output_dir, output_file_name_set)])
 
             # add check to see if file written to directory as expected
