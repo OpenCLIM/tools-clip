@@ -96,8 +96,8 @@ check_output_dir(join(data_path, output_dir))
 
 logger = logging.getLogger('tool-clip')
 logger.setLevel(logging.INFO)
-name = 'tool-clip-%s.log' %(''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6)))
-fh = logging.FileHandler( Path(join(data_path, output_dir)) / name)
+log_file_name = 'tool-clip-%s.log' %(''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6)))
+fh = logging.FileHandler( Path(join(data_path, output_dir)) / log_file_name)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 fh.setFormatter(formatter)
 logger.addHandler(fh)
@@ -258,4 +258,6 @@ logger.info('Completed running clip. Stopping tool.')
 
 if save_logfile is False:
     # delete log file dir
-    rmtree(join(data_path, output_dir, 'log'))
+    #rmtree(join(data_path, output_dir, 'log'))
+    remove(join(data_path, output_dir, log_file_name))
+
