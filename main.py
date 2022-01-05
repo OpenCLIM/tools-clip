@@ -118,13 +118,12 @@ logger.info('Log file established!')
 
 # a list of default options
 defaults = {
-#    'data_type': 'vector',
-    'output_crs': '27700'
+    'output_crs': '27700',
+    'cut_to_bounding_box': True
 }
 
 raster_accepted = ['asc', 'tiff', 'geotiff', 'jpeg']
 vector_accepted = ['shp', 'gpkg', 'geojson', 'json']
-
 
 # get input file(s)
 input_files = [f for f in listdir(join(data_path, input_dir, data_to_clip_dir)) if isfile(join(data_path, input_dir, data_to_clip_dir, f))]
@@ -166,6 +165,16 @@ if clip_file is None and extent is None:
     logger.info('Error: No clip file found and no extent defined. At least one is required. Terminating!')
     exit(2)
 
+# get if cutting to shapefile or bounding box of shapefile (if extent shapefile passed)
+clip_to_extent_bbox = getenv('clip_to_extent_bbox')
+if clip_to_extent_bbox is None:
+    cut_to_bounding_box = defaults['cut_to_bounding_box']
+elif clip_to_extent_bbox == 'clip-to-bounding-box':
+    cut_to_bounding_box = True
+elif clip_to_extent_bbox == 'clip-to-vector-outline':
+    cut_to_bounding_box = False
+else:
+    print(clip_to_extent_bbox)
 
 # output file - this is only used if a single input file is passed
 output_file = getenv('output_file')
@@ -253,7 +262,14 @@ for input_file in input_files:
             print("Using clip file method")
             logger.info("Using clip file method")
 
-            subprocess.run(["gdalwarp", "-cutline", clip_file, "-crop_to_cutline", join(data_path, input_dir, data_to_clip_dir, input_file),
+            if cut_to_bounding_box is False:
+                # crop to the shapefile, not just the bounding box of the shapefile
+                print('Clipping with cutline flag')
+                subprocess.run(["gdalwarp", "-cutline", clip_file, "-crop_to_cutline", join(data_path, input_dir, data_to_clip_dir, input_file),
+                     join(data_path, output_dir, output_file_name_set)])
+            else:
+                print('clipping with bounding box of vector data')
+                subprocess.run(["gdalwarp", "-cutline", clip_file, join(data_path, input_dir, data_to_clip_dir, input_file),
                             join(data_path, output_dir, output_file_name_set)])
 
             # add check to see if file written to directory as expected
@@ -276,6 +292,5 @@ logger.info('Completed running clip. Stopping tool.')
 
 if save_logfile is False:
     # delete log file dir
-    #rmtree(join(data_path, output_dir, 'log'))
     remove(join(data_path, output_dir, log_file_name))
 
