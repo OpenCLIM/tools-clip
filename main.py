@@ -55,38 +55,28 @@ def fetch_clip_file():
     return clip_file
 
 
-def get_data_type(file):
+def get_data_type(file, vector_types, raster_types):
     """
     Get the data type, raster or vector, of the clip file
     """
-    # define the accepected rater and vector data types/file extensions
-    raster = ['asc', 'tiff', 'geotiff', 'jpeg']
-    vector = ['shp', 'gpkg', 'geojson', 'json']
 
     # get the file extension to identify data type
     extension_text = file.split('.')[-1]
 
     # set the data type
-    if extension_text in raster:
-        data_type = raster
-    elif extension_text in vector:
-        data_type = vector
+    if extension_text in raster_types:
+        return 'raster'
+    elif extension_text in vector_types:
+        return 'vector'
     else:
-        data_type = None
-
-    return data_type
+        return None
 
 
-def filter_input_files(input_file_list, data_type):
+def filter_input_files(input_file_list, file_extensions):
     """
+    Get those files from the list of input files where the file extensions is recognised as a raster or vector data type
 
     """
-
-    if data_type == 'raster':
-        file_extensions = ['asc', 'tiff', 'geotiff']
-    elif data_type == 'vector':
-        file_extensions = ['gpkg', 'shp', 'geojson']
-
     verified_file_list = []
 
     for file in input_file_list:
@@ -132,12 +122,9 @@ defaults = {
     'output_crs': '27700'
 }
 
-# get data type
-#data_type = getenv('data_type') # get the type of data to be clipped. raster or vector
-#if data_type is None: # grab the default if the var hasn't been passed
-#    print('Warning! No data_type var passed, using default - vector')
-#    data_type = defaults['data_type']
-#logger.info('Data type to be clipped set as: %s' %data_type)
+raster_accepted = ['asc', 'tiff', 'geotiff', 'jpeg']
+vector_accepted = ['shp', 'gpkg', 'geojson', 'json']
+
 
 # get input file(s)
 input_files = [f for f in listdir(join(data_path, input_dir, data_to_clip_dir)) if isfile(join(data_path, input_dir, data_to_clip_dir, f))]
@@ -148,7 +135,7 @@ if len(input_files) == 0:
 
 logger.info('Input files found: %s' %input_files)
 
-input_files = filter_input_files(input_files, data_type)
+input_files = filter_input_files(input_files, vector_accepted+raster_accepted)
 if len(input_files) == 0:
     print('Error! No input files given specified data format! Terminating!')
     logger.info('Error! No input files given specified data format! Terminating!')
@@ -198,7 +185,7 @@ elif output_file[0] == '' or output_file == '[]': # needed on DAFNI
 # get save_logfile status
 save_logfile = getenv('save_logfile') # get the type of data to be clipped. raster or vector
 if save_logfile is None: # grab the default if the var hasn't been passed
-    print('Warning! No data_type var passed, using default - vector')
+    print('Warning! No save_logfile env passed. Default, False, will be used.')
     save_logfile = False
 elif save_logfile.lower() == 'true':
     save_logfile = True
@@ -208,22 +195,22 @@ else:
     print('Error! Incorrect setting for save logfile parameter (%s)' %save_logfile)
     logger.info('Error! Incorrect setting for save logfile parameter (%s)' % save_logfile)
 
-logger.info('Data type to be clipped set as: %s' %data_type)
-
 # END OF PARAMETER FETCHING
 # START RUNNING THE PROCESSING
 
+logger.info('Starting to loop through files and running clip process')
 # loop through each file to clip
 for input_file in input_files:
 
     # set the data type
-    data_type = get_data_type(input_file)
+    data_type = get_data_type(input_file, vector_types=vector_accepted, raster_types=raster_accepted)
     logger.info('Data type for file %s to be clipped identified as: %s' % (input_file, data_type))
 
     # run clip process
     if data_type is None:
         logger.info('Data type could no be identified for the found input file %s. Skipping clip process for this file.' % input_file)
-    elif data_type == 'vector':g
+        print('Error. Data type is None')
+    elif data_type == 'vector':
         print('Running vector clip')
         logger.info('Using vector methods')
         print(join(data_path, output_dir, output_file))
