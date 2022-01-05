@@ -55,6 +55,28 @@ def fetch_clip_file():
     return clip_file
 
 
+def get_data_type(file):
+    """
+    Get the data type, raster or vector, of the clip file
+    """
+    # define the accepected rater and vector data types/file extensions
+    raster = ['asc', 'tiff', 'geotiff', 'jpeg']
+    vector = ['shp', 'gpkg', 'geojson', 'json']
+
+    # get the file extension to identify data type
+    extension_text = file.split('.')[-1]
+
+    # set the data type
+    if extension_text in raster:
+        data_type = raster
+    elif extension_text in vector:
+        data_type = vector
+    else:
+        data_type = None
+
+    return data_type
+
+
 def filter_input_files(input_file_list, data_type):
     """
 
@@ -106,16 +128,16 @@ logger.info('Log file established!')
 
 # a list of default options
 defaults = {
-    'data_type': 'vector',
+#    'data_type': 'vector',
     'output_crs': '27700'
 }
 
 # get data type
-data_type = getenv('data_type') # get the type of data to be clipped. raster or vector
-if data_type is None: # grab the default if the var hasn't been passed
-    print('Warning! No data_type var passed, using default - vector')
-    data_type = defaults['data_type']
-logger.info('Data type to be clipped set as: %s' %data_type)
+#data_type = getenv('data_type') # get the type of data to be clipped. raster or vector
+#if data_type is None: # grab the default if the var hasn't been passed
+#    print('Warning! No data_type var passed, using default - vector')
+#    data_type = defaults['data_type']
+#logger.info('Data type to be clipped set as: %s' %data_type)
 
 # get input file(s)
 input_files = [f for f in listdir(join(data_path, input_dir, data_to_clip_dir)) if isfile(join(data_path, input_dir, data_to_clip_dir, f))]
@@ -191,12 +213,21 @@ logger.info('Data type to be clipped set as: %s' %data_type)
 # END OF PARAMETER FETCHING
 # START RUNNING THE PROCESSING
 
-# run clip process
-if data_type == 'vector':
-    print('Running vector clip')
-    logger.info('Using vector methods')
-    print(join(data_path, output_dir, output_file))
-    for input_file in input_files:
+# loop through each file to clip
+for input_file in input_files:
+
+    # set the data type
+    data_type = get_data_type(input_file)
+    logger.info('Data type for file %s to be clipped identified as: %s' % (input_file, data_type))
+
+    # run clip process
+    if data_type is None:
+        logger.info('Data type could no be identified for the found input file %s. Skipping clip process for this file.' % input_file)
+    elif data_type == 'vector':g
+        print('Running vector clip')
+        logger.info('Using vector methods')
+        print(join(data_path, output_dir, output_file))
+        #for input_file in input_files:
 
         output_file_name_set = output_file_name(input_file, output_file, len(input_files))
 
@@ -215,9 +246,9 @@ if data_type == 'vector':
                             join(data_path, input_dir, input_file)])
             logger.info("....completed processing")
 
-elif data_type == 'raster':
-    print('Running raster clip')
-    for input_file in input_files:
+    elif data_type == 'raster':
+        print('Running raster clip')
+        #for input_file in input_files:
         print('Running for input:', input_file)
 
         output_file_name_set = output_file_name(input_file, output_file, len(input_files))
@@ -235,7 +266,7 @@ elif data_type == 'raster':
             print("Using clip file method")
             logger.info("Using clip file method")
 
-            subprocess.run(["gdalwarp", "-cutline", clip_file, join(data_path, input_dir, data_to_clip_dir, input_file),
+            subprocess.run(["gdalwarp", "-cutline", clip_file, "-crop_to_cutline", join(data_path, input_dir, data_to_clip_dir, input_file),
                             join(data_path, output_dir, output_file_name_set)])
 
             # add check to see if file written to directory as expected
