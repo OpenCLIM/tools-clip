@@ -273,6 +273,7 @@ for input_file in input_files:
                 command_output = subprocess.run(["gdalwarp", "-cutline", clip_file, join(data_path, input_dir, data_to_clip_dir, input_file),
                             join(data_path, output_dir, output_file_name_set)])
 
+            # check the code returned from GDAL to see if an error occurred or not
             if command_output.returncode == 1:
                 print('Error! Clip did not run. Please check for common errors such as missing projection information.')
                 logger.info('Error! Clip did not run for %s. Please check for common errors such as missing projection information.' % input_file)
@@ -281,11 +282,10 @@ for input_file in input_files:
 
             # add check to see if file written to directory as expected
             if isfile(join(data_path, output_dir, output_file_name_set)):
-                logger.info("Raster clip method completed. Output saved (%s)" %join(data_path, output_dir,output_file_name_set))
+                logger.info("Raster clip method completed. Output saved (%s)" %join(data_path, output_dir, output_file_name_set))
                 print(join(data_path, output_dir, output_file_name_set))
             else:
                 logger.info("Failed. Expected output not found (%s)" % join(data_path, output_dir, output_file_name_set))
-
 
 
 # check output file is written...... and if not return an error?
