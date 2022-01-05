@@ -283,7 +283,7 @@ for input_file in input_files:
             # add check to see if file written to directory as expected
             if isfile(join(data_path, output_dir, output_file_name_set)):
                 logger.info("Raster clip method completed. Output saved (%s)" %join(data_path, output_dir, output_file_name_set))
-                print(join(data_path, output_dir, output_file_name_set))
+                print('Clip completed and file written (%s)' % join(data_path, output_dir, output_file_name_set))
             else:
                 logger.info("Failed. Expected output not found (%s)" % join(data_path, output_dir, output_file_name_set))
 
