@@ -1,7 +1,7 @@
 kind: Model
 api_version: v1beta1
 metadata:
-  display_name: DataToolSet:Clip
+  display_name: ToolSet:Clip
   name: toolset-clip
   summary: A utility tool for clipping spatial data
   publisher: Newcastle University
@@ -11,17 +11,6 @@ metadata:
 spec:
   inputs:
     parameters:
-      - name: data_type
-        title: Data type
-        type: string
-        description: The data format to be transformed
-        default: vector
-        required: true
-        options:
-          - name: vector
-            title: Vector data format
-          - name: raster
-            title: Raster data format
 
       - name: output_file
         title: Output file name
@@ -36,12 +25,31 @@ spec:
         description: Should be formatted as `<xmin>,<ymin>,<xmax>,<ymax>`
         default: 'None'
         required: false
+
+      - name: clip_to_extent_bbox
+        title: Clip data to extent bounding box
+        type: string
+        description: If passing a vector file for the clip extent, clip to outline or clip to bounding box of vector data
+        default: clip-to-bounding-box
+        required: false
+        options:
+          - name: clip-to-bounding-box
+            title: clip-to-bounding-box
+          - name: clip-to-vector-outline
+            title: clip-to-vector-outline
+
       - name: save_logfile
         title: save logfile
         type: string
         description: Save logfile
         default: 'False'
         required: false
+        options:
+          - name: False
+            title: Don't save logfile
+          - name: True
+            title: Save logfile
+
 
     dataslots:
       - name: Input data files
