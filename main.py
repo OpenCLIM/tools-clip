@@ -265,12 +265,19 @@ for input_file in input_files:
             if cut_to_bounding_box is False:
                 # crop to the shapefile, not just the bounding box of the shapefile
                 print('Clipping with cutline flag')
-                subprocess.run(["gdalwarp", "-cutline", clip_file, "-crop_to_cutline", join(data_path, input_dir, data_to_clip_dir, input_file),
+                command_output = subprocess.run(["gdalwarp", "-cutline", clip_file, "-crop_to_cutline", join(data_path, input_dir, data_to_clip_dir, input_file),
                      join(data_path, output_dir, output_file_name_set)])
+
             else:
                 print('clipping with bounding box of vector data')
-                subprocess.run(["gdalwarp", "-cutline", clip_file, join(data_path, input_dir, data_to_clip_dir, input_file),
+                command_output = subprocess.run(["gdalwarp", "-cutline", clip_file, join(data_path, input_dir, data_to_clip_dir, input_file),
                             join(data_path, output_dir, output_file_name_set)])
+
+            if command_output.returncode == 1:
+                print('Error! Clip did not run. Please check for common errors such as missing projection information.')
+                logger.info('Error! Clip did not run for %s. Please check for common errors such as missing projection information.' % input_file)
+            elif command_output.returncode == 0:
+                logger.info('Clip process ran without an error being returned (%s)' % input_file)
 
             # add check to see if file written to directory as expected
             if isfile(join(data_path, output_dir, output_file_name_set)):
