@@ -252,8 +252,11 @@ for input_file in input_files:
     input_crs = get_crs_of_data(join(data_path, input_dir, 'clip', input_file))
     if input_crs is None:
         print('Error! No projection information could be found for the input file.')
+        logger.info('Error! No projection information could be found for the input file.')
         exit()
+
     print('Input CRS is: %s' % input_crs)
+    logger.info('Input CRS is: %s' % input_crs)
 
     # run clip process
     if data_type is None:
@@ -306,10 +309,12 @@ for input_file in input_files:
             clip_crs = get_crs_of_data(clip_file, vector=True)
             if clip_crs is None:
                 print('Error! No projection information could be found for the clip file.')
+                logger.info('Error! No projection information could be found for the clip file.')
                 exit()
-            print(clip_crs, ':', input_crs)
+
             if clip_crs != input_crs:
-                print("Error! CRS of datasets who do not match!!!")
+                print("Error! CRS of datasets do not match!!!")
+                logger.info("Error! CRS of datasets do not match!!!")
                 exit()
 
             if cut_to_bounding_box is False:
