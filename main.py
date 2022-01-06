@@ -80,9 +80,12 @@ def filter_input_files(input_file_list, file_extensions):
     """
     verified_file_list = []
 
+    # loop through the files
     for file in input_file_list:
+        # fetch file extension
         file_extension = file.split('.')[-1].lower()
-        print(file_extension)
+
+        # check if file extension in defined set of usable file types
         if file_extension in file_extensions:
             verified_file_list.append(file)
 
@@ -265,8 +268,6 @@ for input_file in input_files:
     elif data_type == 'vector':
         print('Running vector clip')
         logger.info('Using vector methods')
-        print(join(data_path, output_dir, output_file))
-        #for input_file in input_files:
 
         output_file_name_set = output_file_name(input_file, output_file, len(input_files))
 
@@ -287,7 +288,6 @@ for input_file in input_files:
 
     elif data_type == 'raster':
         print('Running raster clip')
-        #for input_file in input_files:
         print('Running for input:', input_file)
 
         output_file_name_set = output_file_name(input_file, output_file, len(input_files))
@@ -305,13 +305,16 @@ for input_file in input_files:
             print("Using clip file method")
             logger.info("Using clip file method")
 
-            # need to check crs of clip file is same as that for the data being clipped
+            # get crs of clip file
             clip_crs = get_crs_of_data(clip_file, vector=True)
+
+            # if crs could not be found, return error
             if clip_crs is None:
                 print('Error! No projection information could be found for the clip file.')
                 logger.info('Error! No projection information could be found for the clip file.')
                 exit()
 
+            # need to check crs of clip file is same as that for the data being clipped
             if clip_crs != input_crs:
                 print("Error! CRS of datasets do not match!!!")
                 logger.info("Error! CRS of datasets do not match!!!")
@@ -352,6 +355,7 @@ print('Files in output dir: %s' % files)
 print('Completed running clip')
 logger.info('Completed running clip. Stopping tool.')
 
+# final step - delete the log file is requested by user
 if save_logfile is False:
     # delete log file dir
     remove(join(data_path, output_dir, log_file_name))
