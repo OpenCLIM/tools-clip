@@ -4,6 +4,7 @@ from os.path import isfile, join, isdir
 from pathlib import Path
 import logging
 import glob
+import json
 from shutil import rmtree
 
 import string
@@ -86,6 +87,37 @@ def filter_input_files(input_file_list, file_extensions):
             verified_file_list.append(file)
 
     return verified_file_list
+
+
+def get_crs_of_data(file, vector=False):
+    """
+    Find the crs of the file. Checks that it exists and return it for any further required checks.
+    """
+
+    if vector is False:
+        info = subprocess.run(["gdalinfo", "-json", file], stdout=subprocess.PIPE)#.stdout.splitlines()
+        print('**********')
+        #print(info.stdout.decode("utf-8"))
+        info = info.stdout.decode("utf-8")
+        #info = info.replace('\n','')
+        info_ = json.loads(info)
+        #print(info_.keys())
+        if 'coordinateSystem' in info_.keys():
+            proj = info_['coordinateSystem']['wkt'].split(',')[0].replace('PROJCRS[', '').replace('"', '')
+        else:
+            # no projection information available
+            proj = None
+
+    elif vector is True:
+        info = subprocess.run(["ogrinfo", "-ro", "-so", "-al", file], stdout=subprocess.PIPE)#, "glasgow_city_centre_lad"])
+
+        info = info.stdout
+        info = info.decode("utf-8").split('\n')
+        for line in info:
+            if 'PROJCRS' in line:
+                proj = line.replace('PROJCRS[', '').replace('"', '').replace(',', '')
+
+    return proj
 
 
 # file paths
@@ -211,9 +243,17 @@ logger.info('Starting to loop through files and running clip process')
 # loop through each file to clip
 for input_file in input_files:
 
+    print('Input file is: %s' % input_file)
     # set the data type
     data_type = get_data_type(input_file, vector_types=vector_accepted, raster_types=raster_accepted)
     logger.info('Data type for file %s to be clipped identified as: %s' % (input_file, data_type))
+
+    # get the crs of the input file
+    input_crs = get_crs_of_data(join(data_path, input_dir, 'clip', input_file))
+    if input_crs is None:
+        print('Error! No projection information could be found for the input file.')
+        exit()
+    print('Input CRS is: %s' % input_crs)
 
     # run clip process
     if data_type is None:
@@ -261,6 +301,16 @@ for input_file in input_files:
         elif clip_file is not None:
             print("Using clip file method")
             logger.info("Using clip file method")
+
+            # need to check crs of clip file is same as that for the data being clipped
+            clip_crs = get_crs_of_data(clip_file, vector=True)
+            if clip_crs is None:
+                print('Error! No projection information could be found for the clip file.')
+                exit()
+            print(clip_crs, ':', input_crs)
+            if clip_crs != input_crs:
+                print("Error! CRS of datasets who do not match!!!")
+                exit()
 
             if cut_to_bounding_box is False:
                 # crop to the shapefile, not just the bounding box of the shapefile
