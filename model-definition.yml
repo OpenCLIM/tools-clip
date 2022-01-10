@@ -38,12 +38,12 @@ spec:
         title: save logfile
         type: string
         description: Save logfile
-        default: False
+        default: 'False'
         required: false
         options:
-          - name: False
+          - name: 'False'
             title: False
-          - name: True
+          - name: 'True'
             title: True
     dataslots:
       - name: Input data files
