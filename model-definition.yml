@@ -24,7 +24,7 @@ spec:
         default: 'None'
         required: false
       - name: clip_to_extent_bbox
-        title: Clip data to extent bounding box
+        title: How to clip data to clip spatial file
         type: string
         description: If passing a vector file for the clip extent, clip to outline or clip to bounding box of vector data
         default: clip-to-bounding-box
