@@ -5,27 +5,24 @@ metadata:
   name: toolset-clip
   summary: A utility tool for clipping spatial data
   publisher: Newcastle University
-  source_code: https://github.com/OpenCLIM/tools-clipi
+  source_code: https://github.com/OpenCLIM/tools-clip
   description: >
-    Allows a spatial dataset to be clipped. Uses GDAL methods.
+    Allows spatial datasets to be clipped. All input data should use the same coordinate system, and this will be adopted by the output dataset(s). Where the coordinate system for a dataset can't be found, the tool will end and the logfile should be checked for details. When performing a clip using a boundary dataset for the clip, the tool will end if the coordinate system of the input data and the clip data do not match - this will be reported in the logfile. Uses GDAL methods to perform the transformations.
 spec:
   inputs:
     parameters:
-
       - name: output_file
         title: Output file name
         description: The name to be given to the output file - only used if one input file passed, otherwise overridden and the default behaviour used. By default, and if multiple input files set, '_clip' will be appended to the name of the input dataset for the output file name.
         type: string
         required: false
         default: 'None'
-
       - name: extent
         title: extent
         type: string
-        description: Should be formatted as `<xmin>,<ymin>,<xmax>,<ymax>`
+        description: Should be formatted as `<xmin>,<ymin>,<xmax>,<ymax>` and in the same coordinate system as the data to clip.
         default: 'None'
         required: false
-
       - name: clip_to_extent_bbox
         title: Clip data to extent bounding box
         type: string
@@ -37,23 +34,20 @@ spec:
             title: clip-to-bounding-box
           - name: clip-to-vector-outline
             title: clip-to-vector-outline
-
       - name: save_logfile
         title: save logfile
         type: string
         description: Save logfile
-        default: 'False'
+        default: False
         required: false
         options:
           - name: False
-            title: Don't save logfile
+            title: False
           - name: True
-            title: Save logfile
-
-
+            title: True
     dataslots:
       - name: Input data files
-        description: Any data files which are to be clipped. Should match common data formats (rasters - .asc, .tiff, .geotiff; vector - .gpkg, .shp)
+        description: Any data files which are to be clipped. Should match common data formats (rasters - .asc, .tiff, .geotiff; vector - .gpkg, .shp . geojson)
         path: inputs/clip
         required: true
         default:
