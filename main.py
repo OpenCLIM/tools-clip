@@ -192,21 +192,25 @@ if extent == '' or extent == 'None': # if no extent passed
 else:
     extent = extent.split(',')
 
-# if a text bounds file passed, convert to extent text so can use that existing method
-if clip_file.split('.')[-1] == 'txt':
-    #xmin,ymin,xmax,ymax
-    with open(clip_file) as ef:
-        extent = ef.readline()
-    clip_file = None
-
 print('Extent: %s' % extent)
 logger.info('Extent: %s' % extent)
 
 if clip_file is None and extent is None:
-    # if neither a clip file set or an extent passed
-    print('Error! No clip_file var or extent var passed. Terminating!')
-    logger.info('Error: No clip file found and no extent defined. At least one is required. Terminating!')
-    exit(2)
+    # check if a file has been passed from the previous step in DAFNI
+    extent_file = [f for f in listdir(join(data_path, input_dir)) if isfile(join(data_path, input_dir, f))]
+    extent_file = filter_input_files(extent_file, ['txt'])
+
+    if len(extent_file) == 1:
+        # if a text bounds file passed, convert to extent text so can use that existing method
+        # xmin,ymin,xmax,ymax
+        with open(join(data_path, input_dir, extent_file[0])) as ef:
+            extent = ef.readline()
+        clip_file = None
+    else:
+        # if neither a clip file set or an extent passed
+        print('Error! No clip_file var or extent var passed. Terminating!')
+        logger.info('Error: No clip file found and no extent defined. At least one is required. Terminating!')
+        exit(2)
 
 # get if cutting to shapefile or bounding box of shapefile (if extent shapefile passed)
 clip_to_extent_bbox = getenv('clip_to_extent_bbox')
