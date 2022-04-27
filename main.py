@@ -48,7 +48,7 @@ def fetch_clip_file():
     Return None is no file found.
     """
     clip_file = None  # set in case no file is passed
-    extensions = ['gpkg', 'shp']
+    extensions = ['gpkg', 'shp', 'txt']
     for extension in extensions:
         for file in glob.glob(join(data_path, input_dir, clip_extent_dir, "*.%s" % extension)):
             clip_file = file
@@ -160,7 +160,7 @@ defaults = {
 raster_accepted = ['asc', 'tiff', 'geotiff', 'jpeg']
 vector_accepted = ['shp', 'gpkg', 'geojson', 'json']
 
-# get input file(s)
+# get input file(s) - the data to clip
 input_files = [f for f in listdir(join(data_path, input_dir, data_to_clip_dir)) if isfile(join(data_path, input_dir, data_to_clip_dir, f))]
 if len(input_files) == 0:
     print('Error! No input files found! Terminating')
@@ -169,6 +169,7 @@ if len(input_files) == 0:
 
 logger.info('Input files found: %s' %input_files)
 
+# get input files(s)
 input_files = filter_input_files(input_files, vector_accepted+raster_accepted)
 if len(input_files) == 0:
     print('Error! No input files given specified data format! Terminating!')
@@ -190,6 +191,13 @@ if extent == '' or extent == 'None': # if no extent passed
     extent = None
 else:
     extent = extent.split(',')
+
+# if a text bounds file passed, convert to extent text so can use that existing method
+if clip_file.split('.')[-1] == 'txt':
+    #xmin,ymin,xmax,ymax
+    with open(clip_file) as ef:
+        extent = ef.readline()
+    clip_file = None
 
 print('Extent: %s' % extent)
 logger.info('Extent: %s' % extent)
