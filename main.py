@@ -48,7 +48,7 @@ def fetch_clip_file():
     Return None is no file found.
     """
     clip_file = None  # set in case no file is passed
-    extensions = ['gpkg', 'shp']
+    extensions = ['gpkg', 'shp', 'txt']
     for extension in extensions:
         for file in glob.glob(join(data_path, input_dir, clip_extent_dir, "*.%s" % extension)):
             clip_file = file
@@ -160,7 +160,7 @@ defaults = {
 raster_accepted = ['asc', 'tiff', 'geotiff', 'jpeg']
 vector_accepted = ['shp', 'gpkg', 'geojson', 'json']
 
-# get input file(s)
+# get input file(s) - the data to clip
 input_files = [f for f in listdir(join(data_path, input_dir, data_to_clip_dir)) if isfile(join(data_path, input_dir, data_to_clip_dir, f))]
 if len(input_files) == 0:
     print('Error! No input files found! Terminating')
@@ -169,6 +169,7 @@ if len(input_files) == 0:
 
 logger.info('Input files found: %s' %input_files)
 
+# get input files(s)
 input_files = filter_input_files(input_files, vector_accepted+raster_accepted)
 if len(input_files) == 0:
     print('Error! No input files given specified data format! Terminating!')
@@ -195,10 +196,21 @@ print('Extent: %s' % extent)
 logger.info('Extent: %s' % extent)
 
 if clip_file is None and extent is None:
-    # if neither a clip file set or an extent passed
-    print('Error! No clip_file var or extent var passed. Terminating!')
-    logger.info('Error: No clip file found and no extent defined. At least one is required. Terminating!')
-    exit(2)
+    # check if a file has been passed from the previous step in DAFNI
+    extent_file = [f for f in listdir(join(data_path, input_dir)) if isfile(join(data_path, input_dir, f))]
+    extent_file = filter_input_files(extent_file, ['txt'])
+
+    if len(extent_file) == 1:
+        # if a text bounds file passed, convert to extent text so can use that existing method
+        # xmin,ymin,xmax,ymax
+        with open(join(data_path, input_dir, extent_file[0])) as ef:
+            extent = ef.readline()
+        clip_file = None
+    else:
+        # if neither a clip file set or an extent passed
+        print('Error! No clip_file var or extent var passed. Terminating!')
+        logger.info('Error: No clip file found and no extent defined. At least one is required. Terminating!')
+        exit(2)
 
 # get if cutting to shapefile or bounding box of shapefile (if extent shapefile passed)
 clip_to_extent_bbox = getenv('clip_to_extent_bbox')
