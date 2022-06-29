@@ -192,9 +192,7 @@ if len(clip_file) == 0: #if not files passed expect an env to be passed defiing 
     extent = getenv('extent')
     if extent == '' or extent == 'None': # if no extent passed
         pass
-    else:
-        extent = extent.split(',')
-
+    
     print('Extent: %s' % extent)
     logger.info('Extent: %s' % extent)
 
@@ -214,7 +212,8 @@ if extent is None and len(clip_file) == 1:
     with open(join(data_path, input_dir, clip_file[0])) as ef:
         extent = ef.readline()
     clip_file = None
-else:
+
+if extent is None:
     # if neither a clip file set or an extent passed
     print('Error! No clip_file var or extent var passed. Terminating!')
     logger.info('Error: No clip file found and no extent defined. At least one is required. Terminating!')
