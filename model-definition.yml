@@ -53,7 +53,7 @@ spec:
         default:
           - 129f9361-b2ed-460f-a44b-9eeaf00b769c
       - name: Clip extent file
-        description: Spatial file to clip the input data with. GeoPackage or shapefile format only.
+        description: Either a spatial file to clip the input data with (GeoPackage or shapefile) or a text file defining the extent of the bounding box for the clip process.
         path: inputs/clip_extent
         default:
           - 8af3b905-27c9-46db-9684-06bf3eaf0f7c
