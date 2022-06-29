@@ -155,6 +155,7 @@ logger.info('Log file established!')
 # a list of default options
 defaults = {
     'output_crs': '27700',
+    'crs_bng' : 'OSGB 1936 / British National Grid',
     'cut_to_bounding_box': True
 }
 
@@ -209,9 +210,13 @@ if extent is None and len(clip_file) == 1:
     # if a text bounds file passed, convert to extent text so can use that existing method
     # xmin,ymin,xmax,ymax
     print('reading extents file')
-    with open(join(data_path, input_dir, clip_file[0])) as ef:
-        extent = ef.readline()
-    clip_file = None
+    if clip_file[0].endswith('txt'):
+        with open(join(data_path, input_dir, clip_file[0])) as ef:
+            extent = ef.readline()
+        clip_file = None
+
+print('Extent set as:', extent)
+print('Clip file is:', clip_file)
 
 if extent is None and clip_file is None:
     # if neither a clip file set or an extent passed
@@ -219,7 +224,7 @@ if extent is None and clip_file is None:
     logger.info('Error: No clip file found and no extent defined. At least one is required. Terminating!')
     exit(2)
 
-print('Extent set as:', extent)
+
 
 # get if cutting to shapefile or bounding box of shapefile (if extent shapefile passed)
 clip_to_extent_bbox = getenv('clip_to_extent_bbox')
@@ -278,7 +283,7 @@ for input_file in input_files:
         print('Warning! No projection information could be found for the input file.')
         logger.info('Warning! No projection information could be found for the input file.')
 
-        input_crs = defaults['output_crs']
+        input_crs = defaults['crs_bng']
         print('Warning! Using default projection (british national grid) for input file.')
         logger.info('Warning! Using default projection (british national grid) for input file.')
 		
@@ -332,12 +337,12 @@ for input_file in input_files:
             #                join(data_path, output_dir, output_file_name_set)])
             logger.info("....completed processing")
 
-        elif clip_file is not None:
+        elif clip_file is not None and len(clip_file) > 0:
             print("Using clip file method")
             logger.info("Using clip file method")
 
             # get crs of clip file
-            clip_crs = get_crs_of_data(clip_file, vector=True)
+            clip_crs = get_crs_of_data(clip_file[0], vector=True)
 
             # if crs could not be found, return error
             if clip_crs is None:
@@ -347,19 +352,19 @@ for input_file in input_files:
 
             # need to check crs of clip file is same as that for the data being clipped
             if clip_crs != input_crs:
-                print("Error! CRS of datasets do not match!!!")
+                print("Error! CRS of datasets do not match!!! (input: %s ; clip: %s)" %(input_crs, clip_crs))
                 logger.info("Error! CRS of datasets do not match!!!")
                 exit()
 
             if cut_to_bounding_box is False:
                 # crop to the shapefile, not just the bounding box of the shapefile
                 print('Clipping with cutline flag')
-                command_output = subprocess.run(["gdalwarp", "-cutline", clip_file, "-crop_to_cutline", join(data_path, input_dir, data_to_clip_dir, input_file),
+                command_output = subprocess.run(["gdalwarp", "-cutline", clip_file[0], "-crop_to_cutline", join(data_path, input_dir, data_to_clip_dir, input_file),
                      join(data_path, output_dir, output_file_name_set)])
 
             else:
                 print('clipping with bounding box of vector data')
-                command_output = subprocess.run(["gdalwarp", "-cutline", clip_file, join(data_path, input_dir, data_to_clip_dir, input_file),
+                command_output = subprocess.run(["gdalwarp", "-cutline", clip_file[0], join(data_path, input_dir, data_to_clip_dir, input_file),
                             join(data_path, output_dir, output_file_name_set)])
 
             # check the code returned from GDAL to see if an error occurred or not
