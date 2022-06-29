@@ -213,7 +213,7 @@ if extent is None and len(clip_file) == 1:
         extent = ef.readline()
     clip_file = None
 
-if extent is None:
+if extent is None and clip_file is None:
     # if neither a clip file set or an extent passed
     print('Error! No clip_file var or extent var passed. Terminating!')
     logger.info('Error: No clip file found and no extent defined. At least one is required. Terminating!')
