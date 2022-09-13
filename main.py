@@ -160,7 +160,7 @@ defaults = {
 }
 
 raster_accepted = ['asc', 'tiff', 'geotiff', 'jpeg']
-vector_accepted = ['shp', 'gpkg', 'geojson', 'json']
+vector_accepted = ['shp', 'gpkg', 'geojson']
 
 # get input file(s) - the data to clip
 input_files = [f for f in listdir(join(data_path, input_dir, data_to_clip_dir)) if isfile(join(data_path, input_dir, data_to_clip_dir, f))]
