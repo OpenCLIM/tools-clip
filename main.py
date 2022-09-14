@@ -183,6 +183,8 @@ logger.info('Verified input files: %s' %input_files)
 
 # get extents for clip - file or defined extents
 # clip area file
+
+# checks the dataslot
 clip_file = fetch_clip_file()
 print('clip files is:', clip_file)
 logger.info('Clip file: %s' % clip_file)
@@ -196,6 +198,16 @@ if len(clip_file) == 0: #if not files passed expect an env to be passed defiing 
     
     print('Extent: %s' % extent)
     logger.info('Extent: %s' % extent)
+
+# check if file passed from previous step
+input_clip_extents_file = [f for f in listdir(join(data_path, input_dir)) if isfile(join(data_path, input_dir, f))]
+logger.info('Clip file: %s' % input_clip_extents_file)
+if len(clip_file) == 0:
+    if len(input_clip_extents_file) > 0:
+        for _file in input_clip_extents_file:
+            ext = _file.split('.')[1] 
+            if ext == 'txt':
+                clip_file = input_clip_extents_file
 
 # if by now no file passed and extent not passed as an env, check again for an extents text file
 if len(clip_file) == 0 and extent is None:
