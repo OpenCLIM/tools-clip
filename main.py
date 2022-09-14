@@ -245,7 +245,7 @@ if extent is None and len(clip_file) == 1:
     # if a text bounds file passed, convert to extent text so can use that existing method
     # xmin,ymin,xmax,ymax
     print('reading extents file')
-    cf_ext = clip_file[0].split('.')
+    cf_ext = clip_file[0].split('.')[1]
     print(cf_ext)
     if cf_ext == 'txt':
         with open(join(data_path, input_dir, clip_file[0])) as ef:
