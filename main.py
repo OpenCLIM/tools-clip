@@ -165,7 +165,7 @@ vector_accepted = ['shp', 'gpkg', 'geojson']
 
 # get folder structure
 logger.info(glob.glob(join(data_path,'*'), recursive=True))
-logger.info(glob.glob('---')
+logger.info(glob.glob('---'))
 logger.info(glob.glob(join(data_path,input_dir,'*'), recursive=True))
 
 
