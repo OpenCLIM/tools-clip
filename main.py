@@ -201,6 +201,15 @@ clip_file = fetch_clip_file()
 print('clip files is:', clip_file)
 logger.info('Clip file: %s' % clip_file)
 
+# check if file passed from previous step
+outcome = [find_extents_file('extents.txt', data_path)]
+logger.info(outcome)
+print('Outcome is:', outcome)
+if outcome[0] is not None:
+    clip_file = outcome
+
+logger.info('Clip file set to:', clip_file)
+
 # defined extents
 extent = None
 if len(clip_file) == 0: #if not files passed expect an env to be passed defiing the extents
@@ -211,37 +220,9 @@ if len(clip_file) == 0: #if not files passed expect an env to be passed defiing 
     print('Extent: %s' % extent)
     logger.info('Extent: %s' % extent)
 
-# check if file passed from previous step
-outcome = find_extents_file('extents.txt', data_path)
-logger.info(outcome)
-print('Outcome is:', outcome)
-clip_file = [outcome]
-print(clip_file)
-logger.info(clip_file)
-
-# if by now no file passed and extent not passed as an env, check again for an extents text file
-if len(clip_file) == 0 and extent is None:
-    # check if a file has been passed from the previous step in DAFNI
-    print('checking to see if file from previous step')
-    print(join(data_path, input_dir))
-    potential_files = []
-    for f in listdir(join(data_path, input_dir)):
-        if isfile(join(data_path, input_dir, f)) is False:
-            for k in listdir(join(data_path, input_dir, f)):
-                if isfile(join(data_path, input_dir, f, k)):
-                    potential_files.append(join(data_path, input_dir, f, k))
-                
-        
-    #extent_file = [f for f in listdir(join(data_path, input_dir)) if isfile(join(data_path, input_dir, f))]
-    print(potential_files)
-    extent_file = filter_input_files(potential_files, ['txt'])
-    print(extent_file)
-    if len(extent_file) > 0:
-        print('found extent file')
-        clip_file = extent_file
 
 # if no extent string set no, presume file is passed and read in. if no file, return an error and exit
-if extent is None and len(clip_file) == 1:
+if extent is None and len(clip_file) == 1 and clip_file != None:
     # if a text bounds file passed, convert to extent text so can use that existing method
     # xmin,ymin,xmax,ymax
     print('reading extents file')
