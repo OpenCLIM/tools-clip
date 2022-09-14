@@ -214,7 +214,9 @@ if len(clip_file) == 0: #if not files passed expect an env to be passed defiing 
 # check if file passed from previous step
 outcome = find_extents_file('extents.txt', data_path)
 logger.info(outcome)
+print(outcome)
 clip_file = outcome[0]
+print(clip_file)
 logger.info(clip_file)
 
 # if by now no file passed and extent not passed as an env, check again for an extents text file
@@ -243,7 +245,8 @@ if extent is None and len(clip_file) == 1:
     # if a text bounds file passed, convert to extent text so can use that existing method
     # xmin,ymin,xmax,ymax
     print('reading extents file')
-    cf_ext = clip_file[0].split('.')[1]
+    cf_ext = clip_file[0].split('.')
+    print(cf_ext)
     if cf_ext == 'txt':
         with open(join(data_path, input_dir, clip_file[0])) as ef:
             extent = ef.readline()
