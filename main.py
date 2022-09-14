@@ -1,5 +1,5 @@
 import subprocess
-from os import listdir, getenv, mkdir, remove
+from os import listdir, getenv, mkdir, remove, walk
 from os.path import isfile, join, isdir
 from pathlib import Path
 import logging
@@ -94,7 +94,7 @@ def filter_input_files(input_file_list, file_extensions):
 
 
 def find_extents_file(name, path):
-    for root, dirs, files in os.walk(path):
+    for root, dirs, files in walk(path):
         if name in files:
             return join(root, name)
             
