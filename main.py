@@ -93,6 +93,12 @@ def filter_input_files(input_file_list, file_extensions):
     return verified_file_list
 
 
+def find_extents_file(name, path):
+    for root, dirs, files in os.walk(path):
+        if name in files:
+            return join(root, name)
+            
+
 def get_crs_of_data(file, vector=False):
     """
     Find the crs of the file. Checks that it exists and return it for any further required checks.
