@@ -214,8 +214,8 @@ if len(clip_file) == 0: #if not files passed expect an env to be passed defiing 
 # check if file passed from previous step
 outcome = find_extents_file('extents.txt', data_path)
 logger.info(outcome)
-print(outcome)
-clip_file = outcome[0]
+print('Outcome is:', outcome)
+clip_file = [outcome]
 print(clip_file)
 logger.info(clip_file)
 
