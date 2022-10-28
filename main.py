@@ -6,6 +6,8 @@ import logging
 import glob
 import json
 from shutil import rmtree
+import rasterio
+import geopandas as gpd
 
 import string
 import random
@@ -382,15 +384,27 @@ for input_file in input_files:
 
             else:
                 print('clipping with bounding box of vector data')
-                command_output = subprocess.run(["gdalwarp", "-cutline", clip_file[0], join(data_path, input_dir, data_to_clip_dir, input_file),
-                            join(data_path, output_dir, output_file_name_set)])
+          
+                print(join(data_path, input_dir, data_to_clip_dir, input_file))
+                print(join(data_path, output_dir, output_file_name_set)
+)
+                # this should work but does not for some reason....
+                #command_output = subprocess.run(["gdalwarp", "-cutline", clip_file[0], join(data_path, input_dir, data_to_clip_dir, input_file), join(data_path, output_dir, output_file_name_set)])
+                # so instead using this....
+                
+                # read in shapefile
+                t = gpd.read_file(clip_file[0])
+                # get bounding box for shapefile
+                bounds = t.geometry.total_bounds
+                # run clip
+                subprocess.run(["gdalwarp", "-te", str(bounds[0]), str(bounds[1]), str(bounds[2]), str(bounds[3]), join(data_path, input_dir, data_to_clip_dir, input_file), join(data_path, output_dir, output_file_name_set)])
 
             # check the code returned from GDAL to see if an error occurred or not
-            if command_output.returncode == 1:
-                print('Error! Clip did not run. Please check for common errors such as missing projection information.')
-                logger.info('Error! Clip did not run for %s. Please check for common errors such as missing projection information.' % input_file)
-            elif command_output.returncode == 0:
-                logger.info('Clip process ran without an error being returned (%s)' % input_file)
+            #if command_output.returncode == 1:
+            #    print('Error! Clip did not run. Please check for common errors such as missing projection information.')
+            #    logger.info('Error! Clip did not run for %s. Please check for common errors such as missing projection information.' % input_file)
+            #elif command_output.returncode == 0:
+            #    logger.info('Clip process ran without an error being returned (%s)' % input_file)
 
             # add check to see if file written to directory as expected
             if isfile(join(data_path, output_dir, output_file_name_set)):
