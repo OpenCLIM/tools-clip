@@ -193,14 +193,16 @@ if len(input_files) == 0:
     exit(2)
 
 logger.info('Verified input files: %s' %input_files)
-
+print('Verified input files: %s' %input_files)
 
 # get extents for clip - file or defined extents
 # clip area file
 
 # checks the dataslot
 clip_file = fetch_clip_file()
-print('clip files is:', clip_file)
+if type(clip_file) is list:
+    clip_file = clip_file[0]
+print('Clip files is:', clip_file)
 logger.info('Clip file: %s' % clip_file)
 
 # check if file passed from previous step
@@ -210,7 +212,7 @@ print('Outcome is:', outcome)
 if outcome[0] is not None:
     clip_file = outcome
 
-logger.info('Clip file set to:', clip_file)
+logger.info('Clip file set to: %s' %clip_file)
 
 # defined extents
 extent = None
@@ -228,10 +230,10 @@ if extent is None and len(clip_file) == 1 and clip_file != None:
     # if a text bounds file passed, convert to extent text so can use that existing method
     # xmin,ymin,xmax,ymax
     print('reading extents file')
-    cf_ext = clip_file[0].split('.')[1]
+    cf_ext = clip_file.split('.')[1]
     print(cf_ext)
     if cf_ext == 'txt':
-        with open(join(data_path, input_dir, clip_file[0])) as ef:
+        with open(join(data_path, input_dir, clip_file)) as ef:
             extent = ef.readline()
         clip_file = None
 
@@ -362,7 +364,7 @@ for input_file in input_files:
             logger.info("Using clip file method")
 
             # get crs of clip file
-            clip_crs = get_crs_of_data(clip_file[0], vector=True)
+            clip_crs = get_crs_of_data(clip_file, vector=True)
 
             # if crs could not be found, return error
             if clip_crs is None:
@@ -379,7 +381,7 @@ for input_file in input_files:
             if cut_to_bounding_box is False:
                 # crop to the shapefile, not just the bounding box of the shapefile
                 print('Clipping with cutline flag')
-                command_output = subprocess.run(["gdalwarp", "-cutline", clip_file[0], "-crop_to_cutline", join(data_path, input_dir, data_to_clip_dir, input_file),
+                command_output = subprocess.run(["gdalwarp", "-cutline", clip_file, "-crop_to_cutline", join(data_path, input_dir, data_to_clip_dir, input_file),
                      join(data_path, output_dir, output_file_name_set)])
 
             else:
@@ -389,11 +391,11 @@ for input_file in input_files:
                 print(join(data_path, output_dir, output_file_name_set)
 )
                 # this should work but does not for some reason....
-                #command_output = subprocess.run(["gdalwarp", "-cutline", clip_file[0], join(data_path, input_dir, data_to_clip_dir, input_file), join(data_path, output_dir, output_file_name_set)])
+                #command_output = subprocess.run(["gdalwarp", "-cutline", clip_file, join(data_path, input_dir, data_to_clip_dir, input_file), join(data_path, output_dir, output_file_name_set)])
                 # so instead using this....
                 
                 # read in shapefile
-                t = gpd.read_file(clip_file[0])
+                t = gpd.read_file(clip_file)
                 # get bounding box for shapefile
                 bounds = t.geometry.total_bounds
                 # run clip
