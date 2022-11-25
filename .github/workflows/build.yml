@@ -15,8 +15,8 @@ jobs:
       #- name: Test - test extent file method
       #  run: docker run -v $PWD/data_1:/data --env output_file=None --env extent=None -t clip
 
-      #- name: Test - save log file
-      #  run: docker run -v $PWD/data:/data --env output_file=None --env extent=616000,304000,627000,315000 --env save_logfile=True -t clip
+      - name: Test - save log file and extent passed as text
+        run: docker run -v $PWD/data:/data --env output_file=None --env extent=616000,304000,627000,315000 --env save_logfile=True -t clip
 
       - name: Test - clip raster to vector outline rather than bounding box
         run: docker run -v $PWD/data_3:/data --env output_file=None --env extent=None --env clip_to_extent_bbox=clip-to-vector-outline -t clip
