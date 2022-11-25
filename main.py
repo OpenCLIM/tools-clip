@@ -223,7 +223,7 @@ logger.info('Clip file set to: %s' %clip_file)
 
 # defined extents
 extent = None
-if len(clip_file) == 0: #if not files passed expect an env to be passed defining the extents
+if clip_file is None or len(clip_file) == 0: #if not files passed expect an env to be passed defining the extents
     extent = getenv('extent')
     if extent == '' or extent == 'None': # if no extent passed
         extent = None
@@ -254,7 +254,7 @@ if extent is None and clip_file is None:
     exit(2)
 
 
-if len(clip_file) > 0:
+if clip_file is not None and len(clip_file) > 0:
     clip_file = clip_file[0]
 
 # get if cutting to shapefile or bounding box of shapefile (if extent shapefile passed)
