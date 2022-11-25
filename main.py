@@ -200,8 +200,10 @@ print('Verified input files: %s' %input_files)
 
 # checks the dataslot
 clip_file = fetch_clip_file()
-if type(clip_file) is list:
-    clip_file = clip_file[0]
+if len(clip_file) > 0:
+    pass
+else:
+    clip_file = None
 print('Clip files is:', clip_file)
 logger.info('Clip file: %s' % clip_file)
 
@@ -216,7 +218,7 @@ logger.info('Clip file set to: %s' %clip_file)
 
 # defined extents
 extent = None
-if len(clip_file) == 0: #if not files passed expect an env to be passed defiing the extents
+if len(clip_file) == 0: #if not files passed expect an env to be passed defining the extents
     extent = getenv('extent')
     if extent == '' or extent == 'None': # if no extent passed
         extent = None
@@ -229,7 +231,7 @@ if len(clip_file) == 0: #if not files passed expect an env to be passed defiing 
 if extent is None and len(clip_file) == 1 and clip_file != None:
     # if a text bounds file passed, convert to extent text so can use that existing method
     # xmin,ymin,xmax,ymax
-    print('reading extents file')
+    print('Reading extents file')
     cf_ext = clip_file.split('.')[1]
     print(cf_ext)
     if cf_ext == 'txt':
@@ -247,6 +249,8 @@ if extent is None and clip_file is None:
     exit(2)
 
 
+if len(clip_file) > 0:
+    clip_file = clip_file[0]
 
 # get if cutting to shapefile or bounding box of shapefile (if extent shapefile passed)
 clip_to_extent_bbox = getenv('clip_to_extent_bbox')
