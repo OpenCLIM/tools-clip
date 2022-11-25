@@ -26,15 +26,15 @@ def check_output_dir(path):
     return
 
 
-def output_file_name(input_name, output_name, number_of_input_files):
+def output_file_name(input_path, output_name, number_of_input_files):
     """
     Set the name for the output file from each clip process
     If more than 1 input file to be clipped, default behaviour should be used
     If only one input file passed, and output file name not set, use default behavior
     If only one input file passed, and the output file name is passed, use output file name
     """
-    input_name, input_extension = input_name.split('.')
-
+    input_path, input_extension = input_path.split('.')
+    input_name = input_path.split('/')[-1]
     if number_of_input_files > 1 or output_name is None:
         output_file = input_name + '_clip.' + input_extension
     else:
@@ -177,7 +177,12 @@ logger.info(glob.glob('---'))
 logger.info(glob.glob(join(data_path,input_dir,'*'), recursive=True))
 
 # get input file(s) - the data to clip
-input_files = [f for f in listdir(join(data_path, input_dir, data_to_clip_dir)) if isfile(join(data_path, input_dir, data_to_clip_dir, f))]
+input_files = []
+#input_files = [f for f in listdir(join(data_path, input_dir, data_to_clip_dir)) if isfile(join(data_path, input_dir, data_to_clip_dir, f))]
+for root, dirs, files in walk(join(data_path, input_dir, data_to_clip_dir)):
+    for file in files:
+        input_files.append(join(root,file))
+
 if len(input_files) == 0:
     print('Error! No input files found! Terminating')
     logger.info('Error! No input files found! Terminating!')
