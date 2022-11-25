@@ -329,7 +329,7 @@ for input_file in input_files:
         if clip_file is not None:
             logger.info('Using clip file method')
             logger.info("Running....")
-            subprocess.run(["ogr2ogr", "-clipsrc", join(data_path, input_dir, clip_file), "-f", "GPKG",
+            #subprocess.run(["ogr2ogr", "-clipsrc", join(data_path, input_dir, clip_file), "-f", "GPKG",
                             join(data_path, output_dir, output_file_name_set), join(data_path, input_dir, input_file)])
             logger.info("....completed processing")
 
@@ -337,7 +337,7 @@ for input_file in input_files:
             print('Running extent method')
             logger.info('Using extent method')
             logger.info("Running....")
-            subprocess.run(["ogr2ogr", "-spat", *extent, "-f", "GPKG", join(data_path, output_dir,output_file_name_set),
+            #subprocess.run(["ogr2ogr", "-spat", *extent, "-f", "GPKG", join(data_path, output_dir,output_file_name_set),
                             join(data_path, input_dir, input_file)])
             logger.info("....completed processing")
 
@@ -358,7 +358,7 @@ for input_file in input_files:
             print(extent)
             print('Running subprocess')
             extents = extent.split(",")
-            subprocess.run(["gdalwarp", "-te", extents[0], extents[1], extents[2], extents[3], join(data_path, input_dir, data_to_clip_dir, input_file), join(data_path, output_dir, output_file_name_set)])
+            #subprocess.run(["gdalwarp", "-te", extents[0], extents[1], extents[2], extents[3], join(data_path, input_dir, data_to_clip_dir, input_file), join(data_path, output_dir, output_file_name_set)])
             #subprocess.run(["gdalwarp", "-te", *extent, join(data_path, input_dir, data_to_clip_dir, input_file),
             #                join(data_path, output_dir, output_file_name_set)])
             logger.info("....completed processing")
@@ -385,8 +385,8 @@ for input_file in input_files:
             if cut_to_bounding_box is False:
                 # crop to the shapefile, not just the bounding box of the shapefile
                 print('Clipping with cutline flag')
-                command_output = subprocess.run(["gdalwarp", "-cutline", clip_file, "-crop_to_cutline", join(data_path, input_dir, data_to_clip_dir, input_file),
-                     join(data_path, output_dir, output_file_name_set)])
+                #command_output = subprocess.run(["gdalwarp", "-cutline", clip_file, "-crop_to_cutline", join(data_path, input_dir, data_to_clip_dir, input_file),
+                #     join(data_path, output_dir, output_file_name_set)])
 
             else:
                 print('clipping with bounding box of vector data')
@@ -403,7 +403,7 @@ for input_file in input_files:
                 # get bounding box for shapefile
                 bounds = t.geometry.total_bounds
                 # run clip
-                subprocess.run(["gdalwarp", "-te", str(bounds[0]), str(bounds[1]), str(bounds[2]), str(bounds[3]), join(data_path, input_dir, data_to_clip_dir, input_file), join(data_path, output_dir, output_file_name_set)])
+                #subprocess.run(["gdalwarp", "-te", str(bounds[0]), str(bounds[1]), str(bounds[2]), str(bounds[3]), join(data_path, input_dir, data_to_clip_dir, input_file), join(data_path, output_dir, output_file_name_set)])
 
             # check the code returned from GDAL to see if an error occurred or not
             #if command_output.returncode == 1:
