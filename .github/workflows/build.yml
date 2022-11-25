@@ -20,3 +20,6 @@ jobs:
 
       - name: Test - clip raster to vector outline rather than bounding box
         run: docker run -v $PWD/data_3:/data --env output_file=None --env extent=None --env clip_to_extent_bbox=clip-to-vector-outline -t clip
+
+      - name: Test - clip raster to bounding box and data in sub directory
+        run: docker run -v $PWD/data_3:/data --env output_file=None --env extent=None --env clip_to_extent_bbox=clip-to-bounding-box -t clip
