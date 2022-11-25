@@ -330,7 +330,7 @@ for input_file in input_files:
             logger.info('Using clip file method')
             logger.info("Running....")
             #subprocess.run(["ogr2ogr", "-clipsrc", join(data_path, input_dir, clip_file), "-f", "GPKG",
-                            join(data_path, output_dir, output_file_name_set), join(data_path, input_dir, input_file)])
+            #                join(data_path, output_dir, output_file_name_set), join(data_path, input_dir, input_file)])
             logger.info("....completed processing")
 
         elif extent is not None:
@@ -338,7 +338,7 @@ for input_file in input_files:
             logger.info('Using extent method')
             logger.info("Running....")
             #subprocess.run(["ogr2ogr", "-spat", *extent, "-f", "GPKG", join(data_path, output_dir,output_file_name_set),
-                            join(data_path, input_dir, input_file)])
+            #                join(data_path, input_dir, input_file)])
             logger.info("....completed processing")
 
     elif data_type == 'raster':

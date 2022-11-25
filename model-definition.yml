@@ -1,7 +1,7 @@
 kind: Model
 api_version: v1beta1
 metadata:
-  display_name: ToolSet:Clip
+  display_name: ToolSet:Clip:Testing
   name: toolset-clip
   summary: A utility tool for clipping spatial data
   publisher: Newcastle University
