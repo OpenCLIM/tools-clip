@@ -240,7 +240,7 @@ if extent is None and len(clip_file) == 1 and clip_file != None:
     cf_ext = clip_file[0].split('.')[1]
     print(cf_ext)
     if cf_ext == 'txt':
-        with open(join(data_path, input_dir, clip_file)) as ef:
+        with open(join(data_path, input_dir, clip_file[0])) as ef:
             extent = ef.readline()
         clip_file = None
 

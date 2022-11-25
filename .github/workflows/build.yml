@@ -12,8 +12,8 @@ jobs:
       - name: Build
         run: docker build . -t clip
 
-      #- name: Test - test extent file method
-      #  run: docker run -v $PWD/data_1:/data --env output_file=None --env extent=None -t clip
+      - name: Test - test extent file method
+        run: docker run -v $PWD/data_1:/data --env output_file=None --env extent=None -t clip
 
       - name: Test - save log file and extent passed as text
         run: docker run -v $PWD/data:/data --env output_file=None --env extent=616000,304000,627000,315000 --env save_logfile=True -t clip
