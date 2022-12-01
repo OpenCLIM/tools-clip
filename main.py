@@ -153,7 +153,7 @@ def round_bbox_extents(extents, round_to):
     xmax = round_up(extents[1], round_to)
     ymax = round_up(extents[3], round_to)
 
-    return [xmin, ymin, xmax, ymax]
+    return [xmin, xmax, ymin, ymax]
 
 # file paths
 data_path = '/data'
@@ -323,7 +323,7 @@ else:
 # ROUND OPTION
 # get the round extents option
 round_extents = getenv('round_extents') # get the rounds_extents parameter value
-if round_extents is None or round_extents is 'None':
+if round_extents is None or round_extents == 'None':
     print('Warning! No round_extents env passed. Default, False, will be used.')
     round_extents = False
 else:
