@@ -162,15 +162,10 @@ clip_extent_dir = 'clip_extent'
 data_to_clip_dir = 'clip'
 output_dir = 'outputs'
 
-# check input directories exist and create if not
-#check_output_dir(join(data_path, input_dir))
-#check_output_dir(join(data_path, input_dir, clip_extent_dir))
-#check_output_dir(join(data_path, input_dir, data_to_clip_dir))
-
 # check output dir exists and create if not
 check_output_dir(join(data_path, output_dir))
 
-# chek dir for log file exists
+# check dir for log file exists
 #check_output_dir(join(data_path, output_dir, 'log'))
 
 logger = logging.getLogger('tool-clip')
@@ -183,29 +178,33 @@ logger.addHandler(fh)
 
 logger.info('Log file established!')
 
-# a list of default options
+# list of default options
 defaults = {
     'output_crs': '27700',
     'crs_bng' : 'OSGB 1936 / British National Grid',
     'cut_to_bounding_box': True
 }
 
+# list of accepted file types for data being clipped
 raster_accepted = ['asc', 'tiff', 'geotiff', 'jpeg']
 vector_accepted = ['shp', 'gpkg', 'geojson']
 
-
-# get folder structure
+# get folder structure - debugging only
 logger.info(glob.glob(join(data_path,'*'), recursive=True))
 logger.info(glob.glob('---'))
 logger.info(glob.glob(join(data_path,input_dir,'*'), recursive=True))
 
-# get input file(s) - the data to clip
+
+## START SETTING UP THE PARAMETERISATION
+# Search for input files whicha re to be clipped
 input_files = []
-#input_files = [f for f in listdir(join(data_path, input_dir, data_to_clip_dir)) if isfile(join(data_path, input_dir, data_to_clip_dir, f))]
+# loop through the input/clip director for files and files in sub folders
 for root, dirs, files in walk(join(data_path, input_dir, data_to_clip_dir)):
     for file in files:
+        # record any files found
         input_files.append(join(root,file))
 
+# if no input files found, terminate
 if len(input_files) == 0:
     print('Error! No input files found! Terminating')
     logger.info('Error! No input files found! Terminating!')
@@ -213,7 +212,7 @@ if len(input_files) == 0:
 
 logger.info('Input files found: %s' %input_files)
 
-# get input files(s)
+# filter the input files to check that are valid
 input_files = filter_input_files(input_files, vector_accepted+raster_accepted)
 if len(input_files) == 0:
     print('Error! No input files given specified data format! Terminating!')
@@ -223,10 +222,9 @@ if len(input_files) == 0:
 logger.info('Verified input files: %s' %input_files)
 print('Verified input files: %s' %input_files)
 
-# get extents for clip - file or defined extents
-# clip area file
 
-# checks the dataslot
+# get extents for clip - file or defined extents
+# check the data slot (inputs/clip_extent) for a spatial file
 clip_file = fetch_clip_file()
 if len(clip_file) > 0:
     pass
@@ -235,16 +233,18 @@ else:
 print('Clip files is:', clip_file)
 logger.info('Clip file: %s' % clip_file)
 
-# check if file passed from previous step
+# check if file passed from previous step and in a different folder than expected
 outcome = [find_extents_file('extents.txt', data_path)]
-logger.info(outcome)
-print('Outcome is:', outcome)
+logger.info(' Found an extents.txt file')
+print('Found a extents.txt file')
 if outcome[0] is not None:
     clip_file = outcome
 
 logger.info('Clip file set to: %s' %clip_file)
 
 # defined extents
+# a user may pass some defined extents as text. these are only used
+# if no other method identified from the files found
 extent = None
 if clip_file is None or len(clip_file) == 0: #if not files passed expect an env to be passed defining the extents
     extent = getenv('extent')
@@ -255,7 +255,7 @@ if clip_file is None or len(clip_file) == 0: #if not files passed expect an env 
     logger.info('Extent: %s' % extent)
 
 
-# if no extent string set no, presume file is passed and read in. if no file, return an error and exit
+# if no extent string set, presume file is passed and read in. if no file, return an error and exit
 if extent is None and len(clip_file) == 1 and clip_file != None:
     # if a text bounds file passed, convert to extent text so can use that existing method
     # xmin,ymin,xmax,ymax
@@ -270,16 +270,19 @@ if extent is None and len(clip_file) == 1 and clip_file != None:
 print('Extent set as:', extent)
 print('Clip file is:', clip_file)
 
+# no data to allow a file to be clipped has been found. exit.
 if extent is None and clip_file is None:
     # if neither a clip file set or an extent passed
     print('Error! No clip_file var or extent var passed. Terminating!')
     logger.info('Error: No clip file found and no extent defined. At least one is required. Terminating!')
     exit(2)
 
-
+# check if the clip file is still in a list format - it no longer needs to be
 if clip_file is not None and len(clip_file) > 0:
     clip_file = clip_file[0]
 
+# GET USER SENT PARAMETERS
+# CLIP_TO_EXTENT_BOX
 # get if cutting to shapefile or bounding box of shapefile (if extent shapefile passed)
 clip_to_extent_bbox = getenv('clip_to_extent_bbox')
 if clip_to_extent_bbox is None:
@@ -291,7 +294,8 @@ elif clip_to_extent_bbox == 'clip-to-vector-outline':
 else:
     print(clip_to_extent_bbox)
 
-# output file - this is only used if a single input file is passed
+# OUTPUT_FILE
+# this is only used if a single input file is passed
 output_file = getenv('output_file')
 print('Output file: %s' % output_file)
 logger.info('Output file: %s' % output_file)
@@ -306,7 +310,7 @@ elif output_file[0] == '' or output_file == '[]': # needed on DAFNI
     logger.info('Empty output file var passed')
     output_file = None
 
-# get save_logfile status
+# SAVE_LOGFILE
 save_logfile = getenv('save_logfile') # get the type of data to be clipped. raster or vector
 if save_logfile is None: # grab the default if the var hasn't been passed
     print('Warning! No save_logfile env passed. Default, False, will be used.')
@@ -338,7 +342,6 @@ else:
 
 # END OF PARAMETER FETCHING
 # START RUNNING THE PROCESSING
-
 
 logger.info('Starting to loop through files and running clip process')
 # loop through each file to clip
