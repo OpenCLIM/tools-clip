@@ -322,8 +322,8 @@ else:
 
 # ROUND OPTION
 # get the round extents option
-round_extents = getenv('round_extents') # get the type of data to be clipped. raster or vector
-if round_extents is None: # grab the default if the var hasn't been passed
+round_extents = getenv('round_extents') # get the rounds_extents parameter value
+if round_extents is None or round_extents is 'None':
     print('Warning! No round_extents env passed. Default, False, will be used.')
     round_extents = False
 else:
@@ -382,7 +382,7 @@ for input_file in input_files:
         elif extent is not None:
             print('Running extent method')
 
-            if round_extents is not None:
+            if round_extents is not False:
                 print('Rounding extents')
                 extent = round_bbox_extents(extent, round_extents)
 
@@ -404,7 +404,7 @@ for input_file in input_files:
             print('Using extent method')
             print('Extents are: %s' %extents)
 
-            if round_extents is not None:
+            if round_extents is not False:
                 print('Rounding extents')
                 extent = round_bbox_extents(extent, round_extents)
 
@@ -457,7 +457,7 @@ for input_file in input_files:
                 # get bounding box for shapefile
                 bounds = t.geometry.total_bounds
 
-                if round_extents is not None:
+                if round_extents is not False:
                     print('Rounding extents')
                     bounds = round_bbox_extents(bounds, round_extents)
 
