@@ -324,11 +324,11 @@ else:
     logger.info('Error! Incorrect setting for save logfile parameter (%s)' % save_logfile)
 
 
-# ROUND OPTION
+# ROUND EXTENTS
 # get the round extents option
 round_extents = getenv('round_extents') # get the rounds_extents parameter value
-if round_extents is None or round_extents == 'None':
-    print('Warning! No round_extents env passed. Default, False, will be used.')
+if round_extents is None or round_extents == 'None' or round_extents == 0:
+    print('Warning! No round_extents env passed. No rounding will be applied.')
     round_extents = False
 else:
     try:
