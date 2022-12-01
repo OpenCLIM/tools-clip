@@ -5,8 +5,7 @@ from pathlib import Path
 import logging
 import glob
 import json
-from shutil import rmtree
-import rasterio
+import math
 import geopandas as gpd
 
 import string
@@ -131,6 +130,30 @@ def get_crs_of_data(file, vector=False):
 
     return proj
 
+
+# Round minima down and maxima up to nearest km
+def round_down(val, round_val):
+    """Round a value down to the nearst value as set by the round val parameter"""
+    return math.floor(val / round_val) * round_val
+
+
+def round_up(val, round_val):
+    """Round a value up to the nearst value as set by the round val parameter"""
+    return math.ceil(val / round_val) * round_val
+
+
+def round_bbox_extents(extents, round_to):
+    """Round extents
+    extents: a list of 4 values which are the 2 corners/extents of a layer
+    rount_to: an integer value in base 0 in meters to round the extents too
+    """
+
+    xmin = round_down(extents[0], round_to)
+    ymin = round_down(extents[2], round_to)
+    xmax = round_up(extents[1], round_to)
+    ymax = round_up(extents[3], round_to)
+
+    return [xmin, ymin, xmax, ymax]
 
 # file paths
 data_path = '/data'
@@ -296,8 +319,26 @@ else:
     print('Error! Incorrect setting for save logfile parameter (%s)' %save_logfile)
     logger.info('Error! Incorrect setting for save logfile parameter (%s)' % save_logfile)
 
+
+# ROUND OPTION
+# get the round extents option
+round_extents = getenv('round_extents') # get the type of data to be clipped. raster or vector
+if round_extents is None: # grab the default if the var hasn't been passed
+    print('Warning! No round_extents env passed. Default, False, will be used.')
+    round_extents = False
+else:
+    try:
+        # convert the option to an integer
+        # this should be in meters e.g. 1000m = 1km
+        round_extents = int(round_extents)
+    except:
+        print('Error! Incorrect setting for save logfile parameter (%s)' %save_logfile)
+        logger.info('Error! Incorrect setting for save logfile parameter (%s)' % save_logfile)
+        exit()
+
 # END OF PARAMETER FETCHING
 # START RUNNING THE PROCESSING
+
 
 logger.info('Starting to loop through files and running clip process')
 # loop through each file to clip
@@ -340,6 +381,11 @@ for input_file in input_files:
 
         elif extent is not None:
             print('Running extent method')
+
+            if round_extents is not None:
+                print('Rounding extents')
+                extent = round_bbox_extents(extent, round_extents)
+
             logger.info('Using extent method')
             logger.info("Running....")
             subprocess.run(["ogr2ogr", "-spat", *extent, "-f", "GPKG", join(data_path, output_dir,output_file_name_set),
@@ -356,11 +402,14 @@ for input_file in input_files:
         if extent is not None:
             logger.info("Using extent method")
             print('Using extent method')
+            print('Extents are: %s' %extents)
+
+            if round_extents is not None:
+                print('Rounding extents')
+                extent = round_bbox_extents(extent, round_extents)
+
             logger.info("Running....")
-            
-            print(join(data_path, input_dir, data_to_clip_dir, input_file))
-            print(join(data_path, output_dir, output_file_name_set))
-            print(extent)
+
             print('Running subprocess')
             extents = extent.split(",")
             subprocess.run(["gdalwarp", "-te", extents[0], extents[1], extents[2], extents[3], join(data_path, input_dir, data_to_clip_dir, input_file), join(data_path, output_dir, output_file_name_set)])
@@ -407,6 +456,12 @@ for input_file in input_files:
                 t = gpd.read_file(clip_file)
                 # get bounding box for shapefile
                 bounds = t.geometry.total_bounds
+
+                if round_extents is not None:
+                    print('Rounding extents')
+                    bounds = round_bbox_extents(bounds, round_extents)
+
+                print('Using bounds:', bounds)
                 # run clip
                 subprocess.run(["gdalwarp", "-te", str(bounds[0]), str(bounds[1]), str(bounds[2]), str(bounds[3]), join(data_path, input_dir, data_to_clip_dir, input_file), join(data_path, output_dir, output_file_name_set)])
 
