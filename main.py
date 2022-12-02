@@ -147,6 +147,11 @@ def round_bbox_extents(extents, round_to):
     extents: a list of 4 values which are the 2 corners/extents of a layer
     rount_to: an integer value in base 0 in meters to round the extents too
     """
+    print('^^^^^')
+    print('In round bbox extents method.')
+    print('Extents to round are: %s' %extents)
+    print('Rounding to extents to: %s' %round_to)
+    print('^^^^^')
 
     xmin = round_down(extents[0], round_to)
     ymin = round_down(extents[2], round_to)
@@ -327,6 +332,7 @@ else:
 # ROUND EXTENTS
 # get the round extents option
 round_extents = getenv('round_extents') # get the rounds_extents parameter value
+print('Round extents value passed is: %s. Now going to process.' %round_extents)
 if round_extents is None or round_extents == 'None':
     print('Warning! No round_extents env passed. No rounding will be applied.')
     round_extents = False
