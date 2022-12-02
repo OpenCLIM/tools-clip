@@ -1,5 +1,5 @@
-kind: Model
-api_version: v1beta1
+kind: M
+api_version: v1beta2
 metadata:
   display_name: ToolSet:Clip
   name: toolset-clip
@@ -22,6 +22,12 @@ spec:
         type: string
         description: Should be formatted as `<xmin>,<ymin>,<xmax>,<ymax>` and in the same coordinate system as the data to clip.
         default: 'None'
+        required: false
+      - name: round_extents
+        title: round extents
+        type: integer
+        description: Round extents to clip a layer by to the nearst value (in meters), e.g. nearest 100, 1000
+        default: 0
         required: false
       - name: clip_to_extent_bbox
         title: How to clip data to clip spatial file

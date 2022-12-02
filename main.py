@@ -5,8 +5,7 @@ from pathlib import Path
 import logging
 import glob
 import json
-from shutil import rmtree
-import rasterio
+import math
 import geopandas as gpd
 
 import string
@@ -132,6 +131,35 @@ def get_crs_of_data(file, vector=False):
     return proj
 
 
+# Round minima down and maxima up to nearest km
+def round_down(val, round_val):
+    """Round a value down to the nearst value as set by the round val parameter"""
+    return math.floor(val / round_val) * round_val
+
+
+def round_up(val, round_val):
+    """Round a value up to the nearst value as set by the round val parameter"""
+    return math.ceil(val / round_val) * round_val
+
+
+def round_bbox_extents(extents, round_to):
+    """Round extents
+    extents: a list of 4 values which are the 2 corners/extents of a layer
+    rount_to: an integer value in base 0 in meters to round the extents too
+    """
+    print('^^^^^')
+    print('In round bbox extents method.')
+    print('Extents to round are: %s' %extents)
+    print('Rounding to extents to: %s' %round_to)
+    print('^^^^^')
+
+    xmin = round_down(extents[0], round_to)
+    ymin = round_down(extents[2], round_to)
+    xmax = round_up(extents[1], round_to)
+    ymax = round_up(extents[3], round_to)
+
+    return [xmin, xmax, ymin, ymax]
+
 # file paths
 data_path = '/data'
 input_dir = 'inputs'
@@ -139,15 +167,10 @@ clip_extent_dir = 'clip_extent'
 data_to_clip_dir = 'clip'
 output_dir = 'outputs'
 
-# check input directories exist and create if not
-#check_output_dir(join(data_path, input_dir))
-#check_output_dir(join(data_path, input_dir, clip_extent_dir))
-#check_output_dir(join(data_path, input_dir, data_to_clip_dir))
-
 # check output dir exists and create if not
 check_output_dir(join(data_path, output_dir))
 
-# chek dir for log file exists
+# check dir for log file exists
 #check_output_dir(join(data_path, output_dir, 'log'))
 
 logger = logging.getLogger('tool-clip')
@@ -160,29 +183,33 @@ logger.addHandler(fh)
 
 logger.info('Log file established!')
 
-# a list of default options
+# list of default options
 defaults = {
     'output_crs': '27700',
     'crs_bng' : 'OSGB 1936 / British National Grid',
     'cut_to_bounding_box': True
 }
 
+# list of accepted file types for data being clipped
 raster_accepted = ['asc', 'tiff', 'geotiff', 'jpeg']
 vector_accepted = ['shp', 'gpkg', 'geojson']
 
-
-# get folder structure
+# get folder structure - debugging only
 logger.info(glob.glob(join(data_path,'*'), recursive=True))
 logger.info(glob.glob('---'))
 logger.info(glob.glob(join(data_path,input_dir,'*'), recursive=True))
 
-# get input file(s) - the data to clip
+
+## START SETTING UP THE PARAMETERISATION
+# Search for input files whicha re to be clipped
 input_files = []
-#input_files = [f for f in listdir(join(data_path, input_dir, data_to_clip_dir)) if isfile(join(data_path, input_dir, data_to_clip_dir, f))]
+# loop through the input/clip director for files and files in sub folders
 for root, dirs, files in walk(join(data_path, input_dir, data_to_clip_dir)):
     for file in files:
+        # record any files found
         input_files.append(join(root,file))
 
+# if no input files found, terminate
 if len(input_files) == 0:
     print('Error! No input files found! Terminating')
     logger.info('Error! No input files found! Terminating!')
@@ -190,7 +217,7 @@ if len(input_files) == 0:
 
 logger.info('Input files found: %s' %input_files)
 
-# get input files(s)
+# filter the input files to check that are valid
 input_files = filter_input_files(input_files, vector_accepted+raster_accepted)
 if len(input_files) == 0:
     print('Error! No input files given specified data format! Terminating!')
@@ -200,10 +227,9 @@ if len(input_files) == 0:
 logger.info('Verified input files: %s' %input_files)
 print('Verified input files: %s' %input_files)
 
-# get extents for clip - file or defined extents
-# clip area file
 
-# checks the dataslot
+# get extents for clip - file or defined extents
+# check the data slot (inputs/clip_extent) for a spatial file
 clip_file = fetch_clip_file()
 if len(clip_file) > 0:
     pass
@@ -212,16 +238,18 @@ else:
 print('Clip files is:', clip_file)
 logger.info('Clip file: %s' % clip_file)
 
-# check if file passed from previous step
+# check if file passed from previous step and in a different folder than expected
 outcome = [find_extents_file('extents.txt', data_path)]
-logger.info(outcome)
-print('Outcome is:', outcome)
+logger.info(' Found an extents.txt file')
+print('Found a extents.txt file')
 if outcome[0] is not None:
     clip_file = outcome
 
 logger.info('Clip file set to: %s' %clip_file)
 
 # defined extents
+# a user may pass some defined extents as text. these are only used
+# if no other method identified from the files found
 extent = None
 if clip_file is None or len(clip_file) == 0: #if not files passed expect an env to be passed defining the extents
     extent = getenv('extent')
@@ -232,7 +260,7 @@ if clip_file is None or len(clip_file) == 0: #if not files passed expect an env 
     logger.info('Extent: %s' % extent)
 
 
-# if no extent string set no, presume file is passed and read in. if no file, return an error and exit
+# if no extent string set, presume file is passed and read in. if no file, return an error and exit
 if extent is None and len(clip_file) == 1 and clip_file != None:
     # if a text bounds file passed, convert to extent text so can use that existing method
     # xmin,ymin,xmax,ymax
@@ -247,16 +275,19 @@ if extent is None and len(clip_file) == 1 and clip_file != None:
 print('Extent set as:', extent)
 print('Clip file is:', clip_file)
 
+# no data to allow a file to be clipped has been found. exit.
 if extent is None and clip_file is None:
     # if neither a clip file set or an extent passed
     print('Error! No clip_file var or extent var passed. Terminating!')
     logger.info('Error: No clip file found and no extent defined. At least one is required. Terminating!')
     exit(2)
 
-
+# check if the clip file is still in a list format - it no longer needs to be
 if clip_file is not None and len(clip_file) > 0:
     clip_file = clip_file[0]
 
+# GET USER SENT PARAMETERS
+# CLIP_TO_EXTENT_BOX
 # get if cutting to shapefile or bounding box of shapefile (if extent shapefile passed)
 clip_to_extent_bbox = getenv('clip_to_extent_bbox')
 if clip_to_extent_bbox is None:
@@ -268,7 +299,8 @@ elif clip_to_extent_bbox == 'clip-to-vector-outline':
 else:
     print(clip_to_extent_bbox)
 
-# output file - this is only used if a single input file is passed
+# OUTPUT_FILE
+# this is only used if a single input file is passed
 output_file = getenv('output_file')
 print('Output file: %s' % output_file)
 logger.info('Output file: %s' % output_file)
@@ -283,7 +315,7 @@ elif output_file[0] == '' or output_file == '[]': # needed on DAFNI
     logger.info('Empty output file var passed')
     output_file = None
 
-# get save_logfile status
+# SAVE_LOGFILE
 save_logfile = getenv('save_logfile') # get the type of data to be clipped. raster or vector
 if save_logfile is None: # grab the default if the var hasn't been passed
     print('Warning! No save_logfile env passed. Default, False, will be used.')
@@ -295,6 +327,27 @@ elif save_logfile.lower() == 'false':
 else:
     print('Error! Incorrect setting for save logfile parameter (%s)' %save_logfile)
     logger.info('Error! Incorrect setting for save logfile parameter (%s)' % save_logfile)
+
+
+# ROUND EXTENTS
+# get the round extents option
+round_extents = getenv('round_extents') # get the rounds_extents parameter value
+print('Round extents value passed is: %s. Now going to process.' %round_extents)
+if round_extents is None or round_extents == 'None':
+    print('Warning! No round_extents env passed. No rounding will be applied.')
+    round_extents = False
+elif round_extents == 0 or round_extents == '0':
+    print('Rounding will not be applied.')
+    round_extents = False
+else:
+    try:
+        # convert the option to an integer
+        # this should be in meters e.g. 1000m = 1km
+        round_extents = int(round_extents)
+    except:
+        print('Error! Incorrect setting for save logfile parameter (%s)' %save_logfile)
+        logger.info('Error! Incorrect setting for save logfile parameter (%s)' % save_logfile)
+        exit()
 
 # END OF PARAMETER FETCHING
 # START RUNNING THE PROCESSING
@@ -340,6 +393,11 @@ for input_file in input_files:
 
         elif extent is not None:
             print('Running extent method')
+
+            if round_extents is not False:
+                print('Rounding extents')
+                extent = round_bbox_extents(extent, round_extents)
+
             logger.info('Using extent method')
             logger.info("Running....")
             subprocess.run(["ogr2ogr", "-spat", *extent, "-f", "GPKG", join(data_path, output_dir,output_file_name_set),
@@ -356,11 +414,14 @@ for input_file in input_files:
         if extent is not None:
             logger.info("Using extent method")
             print('Using extent method')
+            print('Extents are: %s' %extent)
+
+            if round_extents is not False:
+                print('Rounding extents')
+                extent = round_bbox_extents(extent, round_extents)
+
             logger.info("Running....")
-            
-            print(join(data_path, input_dir, data_to_clip_dir, input_file))
-            print(join(data_path, output_dir, output_file_name_set))
-            print(extent)
+
             print('Running subprocess')
             extents = extent.split(",")
             subprocess.run(["gdalwarp", "-te", extents[0], extents[1], extents[2], extents[3], join(data_path, input_dir, data_to_clip_dir, input_file), join(data_path, output_dir, output_file_name_set)])
@@ -407,6 +468,13 @@ for input_file in input_files:
                 t = gpd.read_file(clip_file)
                 # get bounding box for shapefile
                 bounds = t.geometry.total_bounds
+
+                if round_extents is not False:
+                    print('Rounding extents')
+                    print(bounds, round_extents)
+                    bounds = round_bbox_extents(bounds, round_extents)
+
+                print('Using bounds:', bounds)
                 # run clip
                 subprocess.run(["gdalwarp", "-te", str(bounds[0]), str(bounds[1]), str(bounds[2]), str(bounds[3]), join(data_path, input_dir, data_to_clip_dir, input_file), join(data_path, output_dir, output_file_name_set)])
 
