@@ -327,8 +327,11 @@ else:
 # ROUND EXTENTS
 # get the round extents option
 round_extents = getenv('round_extents') # get the rounds_extents parameter value
-if round_extents is None or round_extents == 'None' or round_extents == 0:
+if round_extents is None or round_extents == 'None':
     print('Warning! No round_extents env passed. No rounding will be applied.')
+    round_extents = False
+elif round_extents == 0 or round_extents == '0':
+    print('Rounding will not be applied.')
     round_extents = False
 else:
     try:
@@ -405,7 +408,7 @@ for input_file in input_files:
         if extent is not None:
             logger.info("Using extent method")
             print('Using extent method')
-            print('Extents are: %s' %extents)
+            print('Extents are: %s' %extent)
 
             if round_extents is not False:
                 print('Rounding extents')
@@ -462,6 +465,7 @@ for input_file in input_files:
 
                 if round_extents is not False:
                     print('Rounding extents')
+                    print(bounds, round_extents)
                     bounds = round_bbox_extents(bounds, round_extents)
 
                 print('Using bounds:', bounds)
