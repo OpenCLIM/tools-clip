@@ -55,7 +55,7 @@ spec:
       - name: Input data files
         description: Any data files which are to be clipped. Should match common data formats (rasters - .asc, .tiff, .geotiff; vector - .gpkg, .shp . geojson)
         path: inputs/clip
-        required: true
+        required: false
         default:
           - 129f9361-b2ed-460f-a44b-9eeaf00b769c
       - name: Clip extent file
